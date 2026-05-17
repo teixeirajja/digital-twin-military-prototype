@@ -23,9 +23,38 @@ st.set_page_config(
 # -----------------------------
 CSS = """
 <style>
+/* ------------------------------------------------------------------
+   DARK MILITARY LOCAL-PROTOTYPE STYLE
+   Keeps all Supabase data/logic unchanged; only changes presentation.
+-------------------------------------------------------------------*/
+:root {
+    --bg0: #020603;
+    --bg1: #06140a;
+    --panel: #08190d;
+    --panel2: #0c2111;
+    --border: rgba(205, 197, 64, .42);
+    --line: rgba(197, 188, 55, .25);
+    --neon: #9fd134;
+    --yellow: #d7c13a;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --green: #22c55e;
+    --text: #f5f7dd;
+    --muted: #aeb989;
+}
 
-/* Streamlit Cloud chrome is external, but the app keeps enough spacing and hides Streamlit internals where possible. */
-.block-container {padding-top: 3.3rem; padding-bottom: 2rem; max-width: 1500px;}
+html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
+    background:
+        radial-gradient(circle at 50% 0%, rgba(30, 84, 37, .30), transparent 36%),
+        radial-gradient(circle at 92% 18%, rgba(157, 209, 52, .10), transparent 24%),
+        linear-gradient(180deg, #000905 0%, #020a05 45%, #000703 100%) !important;
+    color: var(--text) !important;
+}
+.block-container {
+    padding-top: 2.0rem;
+    padding-bottom: 2.2rem;
+    max-width: 1120px;
+}
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
@@ -34,170 +63,232 @@ header {visibility: hidden;}
 [data-testid="stStatusWidget"] {visibility: hidden;}
 [data-testid="stHeader"] {display: none;}
 
-:root {
-    --army-dark: #132414;
-    --army-mid: #1F3B22;
-    --army-green: #2E7D32;
-    --card-dark: #161B22;
-    --muted: #9BA3AF;
-    --line: rgba(17, 24, 39, 0.08);
+/* Core text */
+h1, h2, h3, h4, h5, h6, p, label, span, div {font-family: "Inter", "Segoe UI", Arial, sans-serif;}
+h1, h2, h3, h4 {color: var(--text) !important;}
+[data-testid="stMarkdownContainer"] p {color: var(--muted);}
+hr {border-color: var(--line) !important;}
+
+/* Inputs - old local dark look */
+.stTextInput input, .stPassword input, .stSelectbox [data-baseweb="select"], .stNumberInput input,
+.stDateInput input, .stMultiSelect [data-baseweb="select"] {
+    background: #1f2230 !important;
+    color: #fffbe6 !important;
+    border: 1px solid rgba(215,193,58,.32) !important;
+    border-radius: 9px !important;
+    min-height: 38px;
+}
+.stTextInput input::placeholder {color: rgba(245,247,221,.45) !important;}
+[data-baseweb="popover"] {background:#0b170d !important; color:var(--text) !important;}
+.stSelectbox label, .stSlider label, .stCheckbox label, .stRadio label, .stTextInput label {
+    color: #ecf1c3 !important;
+    font-weight: 800 !important;
+    font-size: .80rem !important;
+}
+.stSlider [data-testid="stTickBar"] {background: rgba(215,193,58,.15) !important;}
+.stCheckbox span {color: #ecf1c3 !important;}
+
+/* Buttons */
+.stButton > button, .stFormSubmitButton > button {
+    border-radius: 8px !important;
+    border: 1px solid rgba(215,193,58,.55) !important;
+    background: #0c2111 !important;
+    color: #f1df6a !important;
+    font-weight: 900 !important;
+    letter-spacing: .03em !important;
+    box-shadow: 0 0 0 1px rgba(159,209,52,.10) inset !important;
+}
+.stButton > button:hover, .stFormSubmitButton > button:hover {
+    background: #162d17 !important;
+    color: #ffffff !important;
+    border-color: rgba(159,209,52,.85) !important;
 }
 
-.main-header {
-    border-radius: 18px;
-    padding: 18px 24px;
-    background: linear-gradient(90deg, #132414 0%, #1F3B22 55%, #2E7D32 100%);
-    color: white;
-    margin-bottom: 18px;
-    box-shadow: 0 10px 26px rgba(18, 36, 20, 0.18);
-    border: 1px solid rgba(255,255,255,0.10);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-}
-.header-left h1 {margin: 0; font-size: 1.75rem; letter-spacing: -0.03em; font-weight: 850;}
-.header-left p {margin: 7px 0 0 0; color: #D9EAD3; font-size: 0.92rem;}
-.header-logout {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 116px;
-    padding: 10px 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.35);
-    color: white !important;
-    text-decoration: none !important;
-    font-weight: 800;
-    background: rgba(255,255,255,0.10);
-}
-.header-logout:hover {background: rgba(255,255,255,0.18);}
-
-.login-card {
-    max-width: 460px;
+/* Login page - same spirit as local prototype */
+.login-shell {
+    max-width: 760px;
     margin: 7vh auto 0 auto;
-    padding: 28px;
-    border-radius: 24px;
-    background: white;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.11);
-    border: 1px solid rgba(30, 64, 175, 0.08);
+}
+.login-hero {
+    padding: 20px 22px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(6,20,10,.96), rgba(9,31,13,.92));
+    border: 1px solid rgba(215,193,58,.42);
+    box-shadow: 0 24px 60px rgba(0,0,0,.44), inset 0 0 28px rgba(46,125,50,.10);
+}
+.login-hero-top {display:flex; align-items:center; justify-content:space-between; gap:16px;}
+.login-brand {display:flex; align-items:center; gap:14px;}
+.login-logo {
+    width:52px; height:52px; border-radius:12px;
+    background:#0d2210; border:1px solid rgba(215,193,58,.45);
+    display:flex; align-items:center; justify-content:center; font-size:1.45rem;
+}
+.login-title {
+    margin:0; color:#fff7b5 !important; font-size:1.58rem; font-weight:950;
+    letter-spacing:.18em; text-transform:uppercase;
+}
+.login-subtitle {margin:6px 0 0 0; color:#d0c264 !important; font-size:.78rem; font-weight:800;}
+.login-badge {
+    color:#dfff85; background:#071207; border:1px solid rgba(215,193,58,.40);
+    border-radius:8px; padding:9px 13px; font-size:.72rem; font-weight:950; text-transform:uppercase;
+}
+.login-grid {
+    margin-top:12px;
+    border:1px solid rgba(215,193,58,.36);
+    border-radius:16px;
+    overflow:hidden;
+    background:#06110a;
+    box-shadow: 0 18px 50px rgba(0,0,0,.36);
+}
+.login-info {display:none;}
+.login-form-panel {padding:22px 22px 16px 22px; background: rgba(6,17,9,.96);}
+.login-form-title {color:#fff7b5 !important; font-size:1rem; font-weight:950; letter-spacing:.08em; text-transform:uppercase; margin:0 0 8px 0;}
+.login-form-subtitle {color:#d0c264 !important; margin:0 0 16px 0; font-size:.78rem; font-weight:700;}
+.login-demo {
+    margin-top:18px; background:#020805; color:#d0c264;
+    border:1px solid rgba(215,193,58,.28); border-radius:10px; padding:12px 14px;
+    font-size:.78rem;
+}
+.login-demo b {color:#fff7b5;}
+.login-demo code {background:#122116; color:#f4dd63; padding:2px 6px; border-radius:6px;}
+.login-foot {text-align:center; color:#8e986d; font-size:.75rem; margin-top:12px;}
+[data-testid="stForm"] {border:none !important; padding:0 !important; box-shadow:none !important; background:transparent !important;}
+
+/* Top/header, based on the local dashboard */
+.main-header {
+    border: 1px solid rgba(215,193,58,.46);
+    border-radius: 14px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(4,18,8,.98), rgba(11,34,14,.96));
+    color: var(--text);
+    margin: 0 auto 8px auto;
+    box-shadow: 0 18px 40px rgba(0,0,0,.32), inset 0 0 26px rgba(159,209,52,.07);
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+.header-left h1 {
+    margin:0; color:#fff7b5 !important; font-size:1.34rem; font-weight:950;
+    letter-spacing:.16em; text-transform:uppercase;
+}
+.header-left p {margin:6px 0 0 0; color:#d0c264 !important; font-size:.78rem; font-weight:800;}
+.header-logout {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:118px; padding:9px 13px; border-radius:8px;
+    border:1px solid rgba(215,193,58,.55);
+    color:#f1df6a !important; text-decoration:none !important; font-weight:950; letter-spacing:.04em;
+    background:#0b1a0d;
+}
+.header-logout:hover {background:#182b13; color:#fff !important; border-color:rgba(159,209,52,.8);}
+.nav-card {
+    padding:10px 12px; margin: 0 0 16px 0; border-radius:12px;
+    background: rgba(4,16,8,.75); border:1px solid rgba(215,193,58,.25);
+}
+.stRadio > div {gap:10px;}
+.stRadio [data-baseweb="radio"] {background:transparent !important;}
+.stRadio label {color:#efe7a0 !important; font-size:.82rem !important;}
+
+/* Titles and cards */
+.section-title {
+    color:#fff7b5 !important;
+    font-size:1.08rem; font-weight:950; margin:12px 0 12px;
+    text-transform:uppercase; letter-spacing:.09em;
+    border:1px solid rgba(215,193,58,.38);
+    border-radius:10px;
+    padding:11px 13px;
+    background: rgba(6,20,10,.92);
 }
 .metric-card {
-    background: #161B22;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 18px;
-    padding: 18px;
-    min-height: 112px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    color: white;
+    background: linear-gradient(180deg, #071609, #0a1d0d);
+    border: 1px solid rgba(215,193,58,.34);
+    border-radius: 10px;
+    padding: 13px 14px;
+    min-height: 106px;
+    color: var(--text);
+    box-shadow: inset 0 0 18px rgba(159,209,52,.05), 0 10px 24px rgba(0,0,0,.18);
 }
-.metric-card small {color:#9BA3AF; font-size:0.80rem;}
-.metric-card h2 {font-size:2.05rem; margin: 12px 0 4px 0; font-weight:850;}
-.metric-card p {margin:0; color:#C8D6C2; font-size:0.80rem;}
+.metric-card small {color:#d0c264; font-size:.72rem; font-weight:950; text-transform:uppercase; letter-spacing:.08em;}
+.metric-card h2 {font-size:1.85rem; margin: 11px 0 3px 0; font-weight:950; color:#f3d93c !important;}
+.metric-card p {margin:0; color:#aeb989; font-size:.75rem; font-weight:700;}
 .soft-card {
-    padding: 18px;
-    border-radius: 18px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 12px 28px rgba(15,23,42,0.06);
+    padding: 16px; border-radius: 12px; background:#06140a;
+    border: 1px solid rgba(215,193,58,.35);
+    box-shadow: 0 14px 28px rgba(0,0,0,.24);
 }
-.status-pill, .decision-pill {
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:5px 11px;
-    border-radius:999px;
-    font-weight:800;
-    font-size:0.78rem;
-    white-space:nowrap;
-}
-.pill-pronto {background:#dcfce7;color:#166534;}
-.pill-atencao {background:#fef3c7;color:#92400e;}
-.pill-risco {background:#fee2e2;color:#991b1b;}
-.pill-executa {background:#dcfce7;color:#166534;}
-.pill-monitorizar {background:#fef3c7;color:#92400e;}
-.pill-retirar {background:#fee2e2;color:#991b1b;}
-.section-title {font-size: 1.22rem; font-weight: 850; margin: 8px 0 12px; color:#101827;}
-.nav-card {
-    padding: 12px 16px;
-    margin: 0 0 18px 0;
-    border-radius: 18px;
-    background: #f8fafc;
-    border: 1px solid #e5e7eb;
-}
-.footer-note {color:#6b7280;font-size:0.82rem;margin-top:16px;}
+.footer-note {color:#8e986d;font-size:0.78rem;margin-top:16px;}
 
-/* More product-like tables */
+/* Alerts */
+.stAlert {
+    background: rgba(6,20,10,.85) !important;
+    border: 1px solid rgba(215,193,58,.32) !important;
+    color: var(--text) !important;
+}
+.stAlert p {color: var(--text) !important;}
+
+/* Product tables in local dark style */
 .table-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 20px;
-    box-shadow: 0 12px 28px rgba(15,23,42,0.07);
+    background: #06140a;
+    border: 1px solid rgba(215,193,58,.38);
+    border-radius: 12px;
+    box-shadow: 0 16px 34px rgba(0,0,0,.28);
     overflow: hidden;
     margin-top: 10px;
     margin-bottom: 22px;
 }
 .table-head {
-    padding: 15px 18px;
-    background: linear-gradient(90deg, #132414 0%, #1F3B22 65%, #2E7D32 100%);
-    color: #ffffff;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-}
-.table-head-title {font-weight: 850; font-size: 1rem;}
-.table-head-subtitle {font-size: .78rem; color:#D9EAD3;}
-.table-scroll {overflow-x:auto;}
-table.pretty-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 0.88rem;
-}
-.pretty-table th {
-    text-align: left;
-    background: #f4f7f3;
-    color: #334155;
-    font-weight: 850;
     padding: 12px 14px;
-    border-bottom: 1px solid #e5e7eb;
-    white-space: nowrap;
+    background: linear-gradient(90deg, #06140a 0%, #0a2110 72%, #132b0f 100%);
+    color: #fff7b5;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    border-bottom:1px solid rgba(215,193,58,.32);
+}
+.table-head-title {font-weight: 950; font-size: .88rem; letter-spacing:.10em; text-transform:uppercase; color:#fff7b5;}
+.table-head-subtitle {font-size: .72rem; color:#d0c264; font-weight:800;}
+.table-scroll {overflow-x:auto;}
+table.pretty-table {width:100%; border-collapse: collapse; font-size:.80rem;}
+.pretty-table th {
+    text-align:left; background:#0d1d0d; color:#d9d06a; font-weight:950;
+    padding:9px 10px; border-bottom:1px solid rgba(215,193,58,.28); white-space:nowrap;
 }
 .pretty-table td {
-    padding: 11px 14px;
-    border-bottom: 1px solid #edf2ef;
-    color: #111827;
-    vertical-align: middle;
-    white-space: nowrap;
+    padding:8px 10px; border-bottom:1px solid rgba(215,193,58,.13);
+    color:#e7edd3; vertical-align:middle; white-space:nowrap;
 }
-.pretty-table tr:nth-child(even) td {background:#fbfdfb;}
-.pretty-table tr:hover td {background:#eef7ef;}
-.pretty-table tr:last-child td {border-bottom: none;}
-.name-cell {font-weight:800; color:#0f172a;}
-.rank-cell {font-weight:800; color:#1F3B22;}
-.value-wrap {display:flex; align-items:center; gap:10px; min-width:150px;}
-.value-number {font-weight:850; min-width:42px; text-align:right; font-variant-numeric: tabular-nums;}
-.mini-track {height:8px; flex:1; min-width:82px; border-radius:999px; background:#e8eee8; overflow:hidden;}
+.pretty-table tr:nth-child(even) td {background:rgba(255,255,255,.025);}
+.pretty-table tr:hover td {background:rgba(159,209,52,.075);}
+.pretty-table tr:last-child td {border-bottom:none;}
+.name-cell {font-weight:900; color:#fffde1;}
+.rank-cell {font-weight:900; color:#f1df6a;}
+.value-wrap {display:flex; align-items:center; gap:8px; min-width:135px;}
+.value-number {font-weight:950; min-width:36px; text-align:right; font-variant-numeric:tabular-nums; color:#fff7b5;}
+.mini-track {height:7px; flex:1; min-width:70px; border-radius:999px; background:#132116; overflow:hidden; border:1px solid rgba(215,193,58,.18);}
 .mini-fill {height:100%; border-radius:999px;}
-.fill-good {background:#22c55e;}
+.fill-good {background:#75cf3a;}
 .fill-warn {background:#f59e0b;}
 .fill-risk {background:#ef4444;}
-.delta-neg {font-weight:850; color:#b91c1c;}
-.delta-pos {font-weight:850; color:#166534;}
-.delta-zero {font-weight:850; color:#64748b;}
-
-/* Buttons and controls with the same visual language as the local prototype */
-.stButton > button {
-    border-radius: 14px !important;
-    border: 1px solid rgba(31,59,34,.16) !important;
-    font-weight: 800 !important;
+.status-pill, .decision-pill {
+    display:inline-flex; align-items:center; justify-content:center; padding:4px 9px;
+    border-radius:7px; font-weight:950; font-size:.68rem; white-space:nowrap; letter-spacing:.02em;
 }
-.stButton > button[kind="primary"], .stButton > button:hover {
-    background: #1F3B22 !important;
-    color: white !important;
-}
+.pill-pronto {background:rgba(34,197,94,.18); color:#95f06e; border:1px solid rgba(34,197,94,.42);}
+.pill-atencao {background:rgba(245,158,11,.18); color:#ffd166; border:1px solid rgba(245,158,11,.48);}
+.pill-risco {background:rgba(239,68,68,.18); color:#ff8080; border:1px solid rgba(239,68,68,.48);}
+.pill-executa {background:rgba(34,197,94,.18); color:#95f06e; border:1px solid rgba(34,197,94,.42);}
+.pill-monitorizar {background:rgba(245,158,11,.18); color:#ffd166; border:1px solid rgba(245,158,11,.48);}
+.pill-retirar {background:rgba(239,68,68,.18); color:#ff8080; border:1px solid rgba(239,68,68,.48);}
+.delta-neg {font-weight:950; color:#ff8080;}
+.delta-pos {font-weight:950; color:#95f06e;}
+.delta-zero {font-weight:950; color:#d0c264;}
 
+/* Dataframes and expanders */
+[data-testid="stDataFrame"] {background:#06140a !important; border:1px solid rgba(215,193,58,.28) !important; border-radius:12px !important; overflow:hidden;}
+.streamlit-expanderHeader {background:#06140a !important; color:#fff7b5 !important; border:1px solid rgba(215,193,58,.28) !important; border-radius:10px !important;}
+
+@media (max-width: 900px) {
+    .block-container {padding-left: .9rem; padding-right: .9rem;}
+    .main-header {align-items:flex-start; flex-direction:column;}
+    .header-left h1 {font-size:1.08rem;}
+    .login-title {font-size:1.25rem; letter-spacing:.10em;}
+    .login-hero-top {align-items:flex-start; flex-direction:column;}
+}
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
@@ -286,13 +377,39 @@ def logout() -> None:
 
 
 def login_page() -> None:
-    st.markdown('<div class="login-card">', unsafe_allow_html=True)
-    st.markdown("## 🛡️ Military Digital Twin")
-    st.caption("Plataforma de monitorização, prontidão e simulação de treino militar.")
+    st.markdown(
+        """
+        <div class="login-shell">
+            <div class="login-hero">
+                <div class="login-hero-top">
+                    <div class="login-brand">
+                        <div class="login-logo">🛡️</div>
+                        <div>
+                            <h1 class="login-title">Digital Twin Militar</h1>
+                            <p class="login-subtitle">Acesso autenticado ao protótipo</p>
+                        </div>
+                    </div>
+                    <div class="login-badge">● Sistema ativo</div>
+                </div>
+            </div>
+            <div class="login-grid">
+                <div class="login-info">
+                    <h3>Plataforma operacional</h3>
+                    <p>Entrada restrita por perfil. O comandante acede à visão da unidade; cada militar vê apenas os seus próprios dados.</p>
+                    <div class="login-feature"><div class="login-dot"></div><div><strong>Dashboard de prontidão</strong><span>Estado da força, risco, recuperação e evolução física.</span></div></div>
+                    <div class="login-feature"><div class="login-dot"></div><div><strong>Digital Twin individual</strong><span>Disponível para o militar, com carga muscular e alertas personalizados.</span></div></div>
+                    <div class="login-feature"><div class="login-dot"></div><div><strong>Simulação de treino</strong><span>Teste de impacto antes da execução real.</span></div></div>
+                </div>
+                <div class="login-form-panel">
+                    <p class="login-form-title">🔐 Identificação</p>
+                    <p class="login-form-subtitle">Introduz as credenciais autorizadas para aceder ao sistema.</p>
+        """,
+        unsafe_allow_html=True,
+    )
 
     with st.form("login_form"):
-        email = st.text_input("Email", placeholder="cap.teixeira@militarytwin.pt")
-        password = st.text_input("Password", type="password")
+        email = st.text_input("Utilizador / Email", placeholder="cap.teixeira@militarytwin.pt")
+        password = st.text_input("Password", type="password", placeholder="••••••••")
         submitted = st.form_submit_button("Entrar", use_container_width=True)
 
     if submitted:
@@ -318,9 +435,20 @@ def login_page() -> None:
             st.error("Não foi possível iniciar sessão. Confirma o email, password e se o utilizador está criado no Supabase Auth.")
             st.caption(str(exc))
 
-    st.divider()
-    st.caption("Demo: cap.teixeira@militarytwin.pt / Cmd2026!  ·  hugo.dias@militarytwin.pt / Mil2026!")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown(
+        """
+                    <div class="login-demo">
+                        <b>Credenciais demo</b><br>
+                        Comandante: <code>cap.teixeira@militarytwin.pt</code> / <code>Cmd2026!</code><br>
+                        Militar: <code>hugo.dias@militarytwin.pt</code> / <code>Mil2026!</code>
+                    </div>
+                </div>
+            </div>
+            <div class="login-foot">Protótipo EITT · Streamlit Cloud + Supabase PostgreSQL/Auth · Dados fictícios</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def require_login() -> Dict[str, Any]:
@@ -417,18 +545,26 @@ def metric_card(label: str, value: Any, caption: str) -> None:
 
 
 def apply_chart_style(fig: go.Figure, height: int = 460) -> go.Figure:
-    """Applies the darker/local prototype visual language to Plotly figures."""
+    """Applies the original local prototype dark military visual language to Plotly figures."""
     fig.update_layout(
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter, Arial, sans-serif", color="#334155"),
-        title=dict(font=dict(size=18, color="#111827")),
-        margin=dict(l=18, r=18, t=54, b=24),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        plot_bgcolor="#06140a",
+        font=dict(family="Inter, Arial, sans-serif", color="#dce7b6"),
+        title=dict(font=dict(size=15, color="#fff7b5"), x=0.02),
+        margin=dict(l=18, r=18, t=50, b=24),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            font=dict(color="#dce7b6"),
+            bgcolor="rgba(0,0,0,0)",
+        ),
     )
-    fig.update_xaxes(gridcolor="#edf2ef", zerolinecolor="#e5e7eb")
-    fig.update_yaxes(gridcolor="#edf2ef", zerolinecolor="#e5e7eb")
+    fig.update_xaxes(gridcolor="rgba(215,193,58,.16)", zerolinecolor="rgba(215,193,58,.25)", linecolor="rgba(215,193,58,.25)")
+    fig.update_yaxes(gridcolor="rgba(215,193,58,.16)", zerolinecolor="rgba(215,193,58,.25)", linecolor="rgba(215,193,58,.25)")
     return fig
 
 
@@ -593,7 +729,6 @@ def top_bar(profile: Dict[str, Any]) -> str:
     if role == "militar":
         page_options = ["Militar", "Digital Twin", "Simular treino"]
     elif role == "comandante":
-        # O comandante não precisa de ver o digital twin individual; fica focado em decisão operacional.
         page_options = ["Dashboard", "Militar", "Simular treino"]
     elif role == "treinador":
         page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino"]
@@ -601,14 +736,15 @@ def top_bar(profile: Dict[str, Any]) -> str:
     st.markdown(f"""
     <div class="main-header">
         <div class="header-left">
-            <h1>Military Digital Twin</h1>
-            <p>{profile.get('rank','')} {profile.get('full_name','')} · {ROLE_LABELS.get(profile.get('role'), profile.get('role'))}</p>
+            <h1>Digital Twin Militar</h1>
+            <p>▲ Sessão iniciada · {html.escape(str(profile.get('rank','')))} {html.escape(str(profile.get('full_name','')))} · {html.escape(str(ROLE_LABELS.get(profile.get('role'), profile.get('role'))))}</p>
         </div>
-        <a class="header-logout" href="?logout=1" target="_self">Logout</a>
+        <a class="header-logout" href="?logout=1" target="_self">Terminar sessão</a>
     </div>
+    <div class="nav-card">
     """, unsafe_allow_html=True)
-
     choice = st.radio("Navegação", page_options, horizontal=True, label_visibility="collapsed")
+    st.markdown("</div>", unsafe_allow_html=True)
     return choice
 
 def commander_dashboard(profile: Dict[str, Any]) -> None:
