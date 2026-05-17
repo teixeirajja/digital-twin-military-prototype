@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import html
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -23,8 +24,8 @@ st.set_page_config(
 CSS = """
 <style>
 
-/* Push the app below Streamlit Cloud's owner toolbar and hide Streamlit UI elements when possible */
-.block-container {padding-top: 4.6rem; padding-bottom: 2rem;}
+/* Streamlit Cloud chrome is external, but the app keeps enough spacing and hides Streamlit internals where possible. */
+.block-container {padding-top: 3.3rem; padding-bottom: 2rem; max-width: 1500px;}
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
@@ -33,34 +34,45 @@ header {visibility: hidden;}
 [data-testid="stStatusWidget"] {visibility: hidden;}
 [data-testid="stHeader"] {display: none;}
 
+:root {
+    --army-dark: #132414;
+    --army-mid: #1F3B22;
+    --army-green: #2E7D32;
+    --card-dark: #161B22;
+    --muted: #9BA3AF;
+    --line: rgba(17, 24, 39, 0.08);
+}
+
 .main-header {
-    border-radius: 22px;
-    padding: 26px 30px;
-    background: linear-gradient(135deg, #07140c 0%, #174d28 52%, #2f8f3a 100%);
+    border-radius: 18px;
+    padding: 18px 24px;
+    background: linear-gradient(90deg, #132414 0%, #1F3B22 55%, #2E7D32 100%);
     color: white;
-    margin-bottom: 22px;
-    box-shadow: 0 16px 38px rgba(12, 66, 29, 0.20);
+    margin-bottom: 18px;
+    box-shadow: 0 10px 26px rgba(18, 36, 20, 0.18);
+    border: 1px solid rgba(255,255,255,0.10);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 18px;
 }
-.header-left h1 {margin: 0; font-size: 2.05rem; letter-spacing: -0.03em;}
-.header-left p {margin: 8px 0 0 0; color: rgba(255,255,255,0.86);}
+.header-left h1 {margin: 0; font-size: 1.75rem; letter-spacing: -0.03em; font-weight: 850;}
+.header-left p {margin: 7px 0 0 0; color: #D9EAD3; font-size: 0.92rem;}
 .header-logout {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 118px;
+    min-width: 116px;
     padding: 10px 16px;
     border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.42);
+    border: 1px solid rgba(255,255,255,0.35);
     color: white !important;
     text-decoration: none !important;
     font-weight: 800;
     background: rgba(255,255,255,0.10);
 }
 .header-logout:hover {background: rgba(255,255,255,0.18);}
+
 .login-card {
     max-width: 460px;
     margin: 7vh auto 0 auto;
@@ -71,16 +83,17 @@ header {visibility: hidden;}
     border: 1px solid rgba(30, 64, 175, 0.08);
 }
 .metric-card {
-    padding: 18px 18px;
+    background: #161B22;
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 18px;
-    background: #111827;
+    padding: 18px;
+    min-height: 112px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     color: white;
-    box-shadow: 0 14px 26px rgba(15,23,42,0.13);
-    min-height: 124px;
 }
-.metric-card small {color:#b8c5d6; font-size:0.78rem;}
-.metric-card h2 {font-size:2.05rem; margin: 11px 0 4px 0;}
-.metric-card p {margin:0; color:#dbe6f1; font-size:0.82rem;}
+.metric-card small {color:#9BA3AF; font-size:0.80rem;}
+.metric-card h2 {font-size:2.05rem; margin: 12px 0 4px 0; font-weight:850;}
+.metric-card p {margin:0; color:#C8D6C2; font-size:0.80rem;}
 .soft-card {
     padding: 18px;
     border-radius: 18px;
@@ -88,18 +101,23 @@ header {visibility: hidden;}
     border: 1px solid #e5e7eb;
     box-shadow: 0 12px 28px rgba(15,23,42,0.06);
 }
-.status-pill {
-    display:inline-block;
+.status-pill, .decision-pill {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
     padding:5px 11px;
     border-radius:999px;
-    font-weight:700;
+    font-weight:800;
     font-size:0.78rem;
+    white-space:nowrap;
 }
 .pill-pronto {background:#dcfce7;color:#166534;}
 .pill-atencao {background:#fef3c7;color:#92400e;}
 .pill-risco {background:#fee2e2;color:#991b1b;}
-.section-title {font-size: 1.22rem; font-weight: 800; margin: 8px 0 12px;}
-
+.pill-executa {background:#dcfce7;color:#166534;}
+.pill-monitorizar {background:#fef3c7;color:#92400e;}
+.pill-retirar {background:#fee2e2;color:#991b1b;}
+.section-title {font-size: 1.22rem; font-weight: 850; margin: 8px 0 12px; color:#101827;}
 .nav-card {
     padding: 12px 16px;
     margin: 0 0 18px 0;
@@ -108,6 +126,77 @@ header {visibility: hidden;}
     border: 1px solid #e5e7eb;
 }
 .footer-note {color:#6b7280;font-size:0.82rem;margin-top:16px;}
+
+/* More product-like tables */
+.table-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    box-shadow: 0 12px 28px rgba(15,23,42,0.07);
+    overflow: hidden;
+    margin-top: 10px;
+    margin-bottom: 22px;
+}
+.table-head {
+    padding: 15px 18px;
+    background: linear-gradient(90deg, #132414 0%, #1F3B22 65%, #2E7D32 100%);
+    color: #ffffff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+.table-head-title {font-weight: 850; font-size: 1rem;}
+.table-head-subtitle {font-size: .78rem; color:#D9EAD3;}
+.table-scroll {overflow-x:auto;}
+table.pretty-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.88rem;
+}
+.pretty-table th {
+    text-align: left;
+    background: #f4f7f3;
+    color: #334155;
+    font-weight: 850;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+.pretty-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #edf2ef;
+    color: #111827;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.pretty-table tr:nth-child(even) td {background:#fbfdfb;}
+.pretty-table tr:hover td {background:#eef7ef;}
+.pretty-table tr:last-child td {border-bottom: none;}
+.name-cell {font-weight:800; color:#0f172a;}
+.rank-cell {font-weight:800; color:#1F3B22;}
+.value-wrap {display:flex; align-items:center; gap:10px; min-width:150px;}
+.value-number {font-weight:850; min-width:42px; text-align:right; font-variant-numeric: tabular-nums;}
+.mini-track {height:8px; flex:1; min-width:82px; border-radius:999px; background:#e8eee8; overflow:hidden;}
+.mini-fill {height:100%; border-radius:999px;}
+.fill-good {background:#22c55e;}
+.fill-warn {background:#f59e0b;}
+.fill-risk {background:#ef4444;}
+.delta-neg {font-weight:850; color:#b91c1c;}
+.delta-pos {font-weight:850; color:#166534;}
+.delta-zero {font-weight:850; color:#64748b;}
+
+/* Buttons and controls with the same visual language as the local prototype */
+.stButton > button {
+    border-radius: 14px !important;
+    border: 1px solid rgba(31,59,34,.16) !important;
+    font-weight: 800 !important;
+}
+.stButton > button[kind="primary"], .stButton > button:hover {
+    background: #1F3B22 !important;
+    color: white !important;
+}
 
 </style>
 """
@@ -326,6 +415,140 @@ def metric_card(label: str, value: Any, caption: str) -> None:
     </div>
     """, unsafe_allow_html=True)
 
+
+def apply_chart_style(fig: go.Figure, height: int = 460) -> go.Figure:
+    """Applies the darker/local prototype visual language to Plotly figures."""
+    fig.update_layout(
+        height=height,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, Arial, sans-serif", color="#334155"),
+        title=dict(font=dict(size=18, color="#111827")),
+        margin=dict(l=18, r=18, t=54, b=24),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+    fig.update_xaxes(gridcolor="#edf2ef", zerolinecolor="#e5e7eb")
+    fig.update_yaxes(gridcolor="#edf2ef", zerolinecolor="#e5e7eb")
+    return fig
+
+
+def _safe(value: Any) -> str:
+    if value is None or (isinstance(value, float) and math.isnan(value)):
+        return "—"
+    return html.escape(str(value))
+
+
+def _status_pill(value: Any) -> str:
+    status = str(value or "Atenção")
+    cls = status_class(status)
+    return f'<span class="status-pill {cls}">{html.escape(status)}</span>'
+
+
+def _decision_pill(value: Any) -> str:
+    decision = str(value or "—")
+    if decision == "Executa":
+        cls = "pill-executa"
+    elif decision == "Monitorizar":
+        cls = "pill-monitorizar"
+    else:
+        cls = "pill-retirar"
+    return f'<span class="decision-pill {cls}">{html.escape(decision)}</span>'
+
+
+def _bar_cell(value: Any, polarity: str = "good", suffix: str = "") -> str:
+    try:
+        val = float(value)
+    except Exception:
+        return _safe(value)
+    pct = max(0, min(100, val))
+    if polarity == "risk":
+        fill = "fill-risk" if pct >= 65 else "fill-warn" if pct >= 40 else "fill-good"
+    else:
+        fill = "fill-good" if pct >= 75 else "fill-warn" if pct >= 55 else "fill-risk"
+    shown = f"{int(round(val))}{suffix}"
+    return (
+        '<div class="value-wrap">'
+        f'<span class="value-number">{shown}</span>'
+        '<span class="mini-track">'
+        f'<span class="mini-fill {fill}" style="width:{pct:.0f}%"></span>'
+        '</span></div>'
+    )
+
+
+def _delta_cell(value: Any) -> str:
+    try:
+        val = int(round(float(value)))
+    except Exception:
+        return _safe(value)
+    cls = "delta-pos" if val > 0 else "delta-neg" if val < 0 else "delta-zero"
+    sign = "+" if val > 0 else ""
+    return f'<span class="{cls}">{sign}{val}</span>'
+
+
+def render_pretty_table(
+    df: pd.DataFrame,
+    columns: Dict[str, str],
+    title: str,
+    subtitle: str = "",
+    bar_columns: Optional[Dict[str, str]] = None,
+    percent_columns: Optional[List[str]] = None,
+    delta_columns: Optional[List[str]] = None,
+) -> None:
+    """Renders small/medium operational tables as product-style HTML cards."""
+    if df.empty:
+        st.info("Sem dados para apresentar.")
+        return
+
+    bar_columns = bar_columns or {}
+    percent_columns = percent_columns or []
+    delta_columns = delta_columns or []
+    use_cols = [c for c in columns.keys() if c in df.columns]
+
+    html_rows = []
+    for _, row in df[use_cols].iterrows():
+        cells = []
+        for col in use_cols:
+            value = row[col]
+            if col == "status":
+                cell = _status_pill(value)
+            elif col == "Decisão":
+                cell = _decision_pill(value)
+            elif col in delta_columns:
+                cell = _delta_cell(value)
+            elif col in bar_columns:
+                cell = _bar_cell(value, polarity=bar_columns[col], suffix="%")
+            elif col in percent_columns:
+                cell = f"{int(round(float(value)))}%" if pd.notna(value) else "—"
+            elif col == "full_name":
+                cell = f'<span class="name-cell">{_safe(value)}</span>'
+            elif col == "rank":
+                cell = f'<span class="rank-cell">{_safe(value)}</span>'
+            else:
+                if isinstance(value, (int, float, np.integer, np.floating)) and pd.notna(value):
+                    cell = f"{value:.1f}" if isinstance(value, float) and not float(value).is_integer() else f"{int(value)}"
+                else:
+                    cell = _safe(value)
+            cells.append(f"<td>{cell}</td>")
+        html_rows.append("<tr>" + "".join(cells) + "</tr>")
+
+    head = "".join(f"<th>{html.escape(label)}</th>" for col, label in columns.items() if col in use_cols)
+    subtitle_html = f'<div class="table-head-subtitle">{html.escape(subtitle)}</div>' if subtitle else ""
+    table_html = f"""
+    <div class="table-card">
+        <div class="table-head">
+            <div class="table-head-title">{html.escape(title)}</div>
+            {subtitle_html}
+        </div>
+        <div class="table-scroll">
+            <table class="pretty-table">
+                <thead><tr>{head}</tr></thead>
+                <tbody>{''.join(html_rows)}</tbody>
+            </table>
+        </div>
+    </div>
+    """
+    st.markdown(table_html, unsafe_allow_html=True)
+
 # -----------------------------
 # Visual digital twin
 # -----------------------------
@@ -443,7 +666,8 @@ def commander_dashboard(profile: Dict[str, Any]) -> None:
             labels={"readiness_score": "Prontidão", "full_name": "Militar", "status": "Estado"},
             title="Prontidão por militar",
         )
-        fig.update_layout(height=480, legend_title_text="Estado")
+        fig.update_layout(legend_title_text="Estado")
+        fig = apply_chart_style(fig, height=480)
         st.plotly_chart(fig, use_container_width=True)
     with g2:
         fig = px.scatter(
@@ -458,17 +682,37 @@ def commander_dashboard(profile: Dict[str, Any]) -> None:
             labels={"readiness_score": "Prontidão", "injury_risk": "Risco de lesão", "recovery_score": "Recuperação", "status": "Estado"},
             title="Prontidão vs risco de lesão",
         )
-        fig.update_layout(height=480)
+        fig = apply_chart_style(fig, height=480)
         st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown('<div class="section-title">Tabela operacional</div>', unsafe_allow_html=True)
     cols = [c for c in ["rank", "full_name", "status", "readiness_score", "injury_risk", "recovery_score", "cooper_m", "fatigue_score", "sleep_hours"] if c in view.columns]
     if cols:
         sort_cols = [c for c in ["status", "readiness_score"] if c in view.columns]
-        display_df = view[cols]
+        display_df = view[cols].copy()
         if sort_cols:
             display_df = display_df.sort_values(sort_cols, ascending=[True, False][:len(sort_cols)])
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        render_pretty_table(
+            display_df,
+            columns={
+                "rank": "Posto",
+                "full_name": "Militar",
+                "status": "Estado",
+                "readiness_score": "Prontidão",
+                "injury_risk": "Risco",
+                "recovery_score": "Recuperação",
+                "cooper_m": "Cooper",
+                "fatigue_score": "Fadiga",
+                "sleep_hours": "Sono",
+            },
+            title="Tabela operacional",
+            subtitle=f"{len(display_df)} militar(es) filtrados · dados da base Supabase",
+            bar_columns={
+                "readiness_score": "good",
+                "injury_risk": "risk",
+                "recovery_score": "good",
+                "fatigue_score": "risk",
+            },
+        )
 
 
 def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = None) -> Optional[str]:
@@ -746,7 +990,8 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
             labels={"full_name": "Militar", "Prontidão prevista": "Prontidão prevista"},
             title="Impacto previsto por militar",
         )
-        fig.update_layout(height=430, legend_title_text="Decisão")
+        fig.update_layout(legend_title_text="Decisão")
+        fig = apply_chart_style(fig, height=430)
         st.plotly_chart(fig, use_container_width=True)
     with v2:
         fig = px.scatter(
@@ -759,14 +1004,34 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
             color_discrete_map={"Executa": "#22c55e", "Monitorizar": "#f59e0b", "Retirar/Adaptar": "#ef4444"},
             title="Risco previsto vs prontidão prevista",
         )
-        fig.update_layout(height=430)
+        fig = apply_chart_style(fig, height=430)
         st.plotly_chart(fig, use_container_width=True)
 
     table_cols = ["rank", "full_name", "status", "Prontidão atual", "Prontidão prevista", "Risco atual", "Risco previsto", "Impacto", "Decisão"]
-    st.dataframe(sim[table_cols].sort_values(["Decisão", "Prontidão prevista"]), use_container_width=True, hide_index=True)
-
-    with st.expander("Resumo dos parâmetros simulados"):
-        st.json({k: v for k, v in params.items() if k not in ["load_factor", "risk_factor"]})
+    sim_table = sim[table_cols].sort_values(["Decisão", "Prontidão prevista"]).copy()
+    render_pretty_table(
+        sim_table,
+        columns={
+            "rank": "Posto",
+            "full_name": "Militar",
+            "status": "Estado atual",
+            "Prontidão atual": "Prontidão atual",
+            "Prontidão prevista": "Prontidão prevista",
+            "Risco atual": "Risco atual",
+            "Risco previsto": "Risco previsto",
+            "Impacto": "Impacto",
+            "Decisão": "Decisão",
+        },
+        title="Resultado operacional da simulação",
+        subtitle=f"{params['training_type']} · {group_label} · {len(sim_table)} militar(es)",
+        bar_columns={
+            "Prontidão atual": "good",
+            "Prontidão prevista": "good",
+            "Risco atual": "risk",
+            "Risco previsto": "risk",
+        },
+        delta_columns=["Impacto"],
+    )
 
     if st.button("Guardar simulação coletiva", use_container_width=True):
         try:
