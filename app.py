@@ -40,9 +40,27 @@ header {visibility: hidden;}
     color: white;
     margin-bottom: 22px;
     box-shadow: 0 16px 38px rgba(12, 66, 29, 0.20);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
 }
-.main-header h1 {margin: 0; font-size: 2.05rem; letter-spacing: -0.03em;}
-.main-header p {margin: 8px 0 0 0; color: rgba(255,255,255,0.86);}
+.header-left h1 {margin: 0; font-size: 2.05rem; letter-spacing: -0.03em;}
+.header-left p {margin: 8px 0 0 0; color: rgba(255,255,255,0.86);}
+.header-logout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 118px;
+    padding: 10px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.42);
+    color: white !important;
+    text-decoration: none !important;
+    font-weight: 800;
+    background: rgba(255,255,255,0.10);
+}
+.header-logout:hover {background: rgba(255,255,255,0.18);}
 .login-card {
     max-width: 460px;
     margin: 7vh auto 0 auto;
@@ -154,6 +172,13 @@ def sb_insert(table: str, payload: Dict[str, Any]) -> None:
     client = client_with_session()
     client.table(table).insert(payload).execute()
 
+
+def sb_insert_many(table: str, payloads: List[Dict[str, Any]]) -> None:
+    if not payloads:
+        return
+    client = client_with_session()
+    client.table(table).insert(payloads).execute()
+
 # -----------------------------
 # Auth
 # -----------------------------
@@ -164,6 +189,10 @@ def logout() -> None:
         pass
     for key in ["access_token", "refresh_token", "profile", "user_email", "page"]:
         st.session_state.pop(key, None)
+    try:
+        st.query_params.clear()
+    except Exception:
+        pass
     st.rerun()
 
 
@@ -336,30 +365,28 @@ def digital_twin_figure(muscle: Dict[str, Any], title: str = "Digital Twin — c
 # Pages
 # -----------------------------
 def top_bar(profile: Dict[str, Any]) -> str:
-    st.markdown(f"""
-    <div class="main-header">
-        <h1>Military Digital Twin</h1>
-        <p>{profile.get('rank','')} {profile.get('full_name','')} · {ROLE_LABELS.get(profile.get('role'), profile.get('role'))}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
     role = profile.get("role")
     page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino", "Admin"]
     if role == "militar":
         page_options = ["Militar", "Digital Twin", "Simular treino"]
-    elif role in ["comandante", "treinador"]:
+    elif role == "comandante":
+        # O comandante não precisa de ver o digital twin individual; fica focado em decisão operacional.
+        page_options = ["Dashboard", "Militar", "Simular treino"]
+    elif role == "treinador":
         page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino"]
 
-    st.markdown('<div class="nav-card">', unsafe_allow_html=True)
-    c1, c2 = st.columns([5, 1])
-    with c1:
-        choice = st.radio("Navegação", page_options, horizontal=True, label_visibility="collapsed")
-    with c2:
-        if st.button("Logout", use_container_width=True):
-            logout()
-    st.markdown('</div>', unsafe_allow_html=True)
-    return choice
+    st.markdown(f"""
+    <div class="main-header">
+        <div class="header-left">
+            <h1>Military Digital Twin</h1>
+            <p>{profile.get('rank','')} {profile.get('full_name','')} · {ROLE_LABELS.get(profile.get('role'), profile.get('role'))}</p>
+        </div>
+        <a class="header-logout" href="?logout=1" target="_self">Logout</a>
+    </div>
+    """, unsafe_allow_html=True)
 
+    choice = st.radio("Navegação", page_options, horizontal=True, label_visibility="collapsed")
+    return choice
 
 def commander_dashboard(profile: Dict[str, Any]) -> None:
     st.markdown('<div class="section-title">Dashboard do comandante</div>', unsafe_allow_html=True)
@@ -533,25 +560,250 @@ def twin_page(profile: Dict[str, Any]) -> None:
             st.success("Sem zonas musculares em carga crítica.")
 
 
-def simulate_training(profile: Dict[str, Any]) -> None:
-    st.markdown('<div class="section-title">Simulador de treino</div>', unsafe_allow_html=True)
+def build_group_selection(snapshot: pd.DataFrame) -> Tuple[str, pd.DataFrame]:
+    """Selects an operational group for command-level simulation."""
+    st.caption("Simulação coletiva: aplica o treino a um escalão operacional e calcula o impacto previsto em cada militar.")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        echelon = st.selectbox("Escalão", ["Companhia", "Pelotão", "Secção"])
+
+    group_label = "Companhia"
+    target = snapshot.copy()
+
+    platoons = df_from("platoons", order="name")
+    platoon_map = {}
+    if not platoons.empty:
+        platoon_map = {row["name"]: row["id"] for _, row in platoons.iterrows()}
+
+    if echelon in ["Pelotão", "Secção"]:
+        with c2:
+            if platoon_map:
+                platoon_name = st.selectbox("Pelotão", list(platoon_map.keys()))
+                platoon_id = platoon_map[platoon_name]
+                target = target[target["platoon_id"] == platoon_id].copy()
+                group_label = platoon_name
+            else:
+                st.warning("Sem pelotões disponíveis na base de dados.")
+
+    if echelon == "Secção":
+        target = target.sort_values(["rank", "full_name"]).reset_index(drop=True)
+        midpoint = max(1, math.ceil(len(target) / 2))
+        section_options = ["1.ª Secção", "2.ª Secção"]
+        with c3:
+            section = st.selectbox("Secção", section_options)
+        if section == "1.ª Secção":
+            target = target.iloc[:midpoint].copy()
+        else:
+            target = target.iloc[midpoint:].copy()
+        group_label = f"{group_label} · {section}"
+    elif echelon == "Companhia":
+        with c2:
+            st.info("Toda a companhia selecionada")
+        group_label = "Companhia de Reconhecimento"
+
+    return group_label, target
+
+
+def group_training_inputs() -> Dict[str, Any]:
+    training_type = st.selectbox(
+        "Tipo de treino",
+        [
+            "Corrida contínua",
+            "Corrida intervalada",
+            "Marcha com carga",
+            "Circuito de força",
+            "Treino técnico-tático",
+            "Recuperação ativa",
+        ],
+    )
+
+    params: Dict[str, Any] = {"training_type": training_type}
+
+    if training_type == "Corrida contínua":
+        c1, c2, c3 = st.columns(3)
+        with c1: params["duration"] = st.slider("Duração", 20, 90, 45, step=5)
+        with c2: params["intensity"] = st.slider("Intensidade", 1, 10, 6)
+        with c3: params["pace_zone"] = st.selectbox("Zona de ritmo", ["Leve", "Moderado", "Forte"])
+        params["focus"] = "Pernas"
+        params["load_factor"] = params["duration"] * params["intensity"] / 10
+        params["risk_factor"] = 0.75 if params["pace_zone"] == "Leve" else 0.95 if params["pace_zone"] == "Moderado" else 1.15
+
+    elif training_type == "Corrida intervalada":
+        c1, c2, c3, c4 = st.columns(4)
+        with c1: params["repetitions"] = st.slider("Repetições", 4, 12, 8)
+        with c2: params["distance_m"] = st.selectbox("Distância por repetição", [200, 400, 800, 1000], index=1)
+        with c3: params["rest_s"] = st.slider("Recuperação", 30, 180, 90, step=15)
+        with c4: params["intensity"] = st.slider("Intensidade", 1, 10, 8)
+        params["duration"] = int(params["repetitions"] * (params["distance_m"] / 1000) * 4.2 + params["repetitions"] * params["rest_s"] / 60)
+        params["focus"] = "Pernas"
+        params["load_factor"] = params["repetitions"] * (params["distance_m"] / 100) * params["intensity"] / 8
+        params["risk_factor"] = 1.35
+
+    elif training_type == "Marcha com carga":
+        c1, c2, c3, c4 = st.columns(4)
+        with c1: params["duration"] = st.slider("Duração", 45, 180, 90, step=15)
+        with c2: params["load_kg"] = st.slider("Carga externa", 5, 35, 20, step=5)
+        with c3: params["terrain"] = st.selectbox("Terreno", ["Plano", "Misto", "Montanhoso"])
+        with c4: params["intensity"] = st.slider("Intensidade", 1, 10, 7)
+        terrain_mult = {"Plano": 0.9, "Misto": 1.1, "Montanhoso": 1.35}[params["terrain"]]
+        params["focus"] = "Pernas/Core"
+        params["load_factor"] = (params["duration"] * params["intensity"] / 12 + params["load_kg"] * 1.15) * terrain_mult
+        params["risk_factor"] = 1.25
+
+    elif training_type == "Circuito de força":
+        c1, c2, c3, c4 = st.columns(4)
+        with c1: params["rounds"] = st.slider("Rondas", 2, 8, 4)
+        with c2: params["exercises"] = st.slider("Exercícios", 4, 12, 8)
+        with c3: params["intensity"] = st.slider("Intensidade", 1, 10, 7)
+        with c4: params["focus"] = st.selectbox("Foco", ["Full-body", "Superior", "Inferior", "Core"])
+        params["duration"] = int(params["rounds"] * params["exercises"] * 1.8)
+        params["load_factor"] = params["rounds"] * params["exercises"] * params["intensity"] * 0.65
+        params["risk_factor"] = 1.05 if params["focus"] in ["Full-body", "Inferior"] else 0.85
+
+    elif training_type == "Treino técnico-tático":
+        c1, c2, c3, c4 = st.columns(4)
+        with c1: params["duration"] = st.slider("Duração", 30, 180, 75, step=15)
+        with c2: params["scenario"] = st.selectbox("Cenário", ["Técnica leve", "Patrulha", "Combate urbano", "Progressão em terreno"])
+        with c3: params["equipment"] = st.slider("Carga/equipamento", 0, 30, 12, step=3)
+        with c4: params["intensity"] = st.slider("Intensidade", 1, 10, 6)
+        scenario_mult = {"Técnica leve": 0.75, "Patrulha": 1.0, "Combate urbano": 1.25, "Progressão em terreno": 1.15}[params["scenario"]]
+        params["focus"] = "Full-body"
+        params["load_factor"] = (params["duration"] * params["intensity"] / 13 + params["equipment"] * 0.8) * scenario_mult
+        params["risk_factor"] = 1.0 * scenario_mult
+
+    else:  # Recuperação ativa
+        c1, c2, c3 = st.columns(3)
+        with c1: params["duration"] = st.slider("Duração", 15, 60, 30, step=5)
+        with c2: params["modality"] = st.selectbox("Modalidade", ["Mobilidade", "Bicicleta leve", "Corrida muito leve", "Alongamentos"])
+        with c3: params["intensity"] = st.slider("Intensidade", 1, 5, 2)
+        params["focus"] = "Recuperação"
+        params["load_factor"] = params["duration"] * params["intensity"] / 20
+        params["risk_factor"] = 0.25
+        params["recovery_bonus"] = 9
+
+    params.setdefault("recovery_bonus", 0)
+    return params
+
+
+def simulate_group_training(profile: Dict[str, Any]) -> None:
+    st.markdown('<div class="section-title">Simulador de treino coletivo</div>', unsafe_allow_html=True)
+    snapshot = assemble_snapshot()
+    if snapshot.empty:
+        st.warning("Não há militares acessíveis para simular.")
+        return
+
+    group_label, target = build_group_selection(snapshot)
+    if target.empty:
+        st.warning("O grupo selecionado não tem militares disponíveis.")
+        return
+
+    st.markdown(f"**Grupo selecionado:** {group_label} · **{len(target)} militares**")
+    params = group_training_inputs()
+
+    load_factor = float(params.get("load_factor", 0))
+    risk_factor = float(params.get("risk_factor", 1.0))
+    recovery_bonus = float(params.get("recovery_bonus", 0))
+
+    sim = target.copy()
+    for col in ["readiness_score", "injury_risk", "recovery_score"]:
+        sim[col] = pd.to_numeric(sim[col], errors="coerce").fillna(50)
+
+    vulnerability = 1 + (sim["injury_risk"] / 140) + ((65 - sim["recovery_score"]).clip(lower=0) / 100)
+    sim["Prontidão atual"] = sim["readiness_score"].round(0).astype(int)
+    sim["Risco atual"] = sim["injury_risk"].round(0).astype(int)
+    sim["Prontidão prevista"] = np.clip(sim["readiness_score"] - load_factor * 0.45 * vulnerability + recovery_bonus, 0, 100).round(0).astype(int)
+    sim["Risco previsto"] = np.clip(sim["injury_risk"] + load_factor * 0.40 * risk_factor * vulnerability - recovery_bonus * 0.5, 0, 100).round(0).astype(int)
+    sim["Impacto"] = sim["Prontidão prevista"] - sim["Prontidão atual"]
+    sim["Decisão"] = np.where(sim["Risco previsto"] >= 75, "Retirar/Adaptar", np.where(sim["Prontidão prevista"] < 55, "Monitorizar", "Executa"))
+
+    avg_now = int(round(sim["Prontidão atual"].mean()))
+    avg_after = int(round(sim["Prontidão prevista"].mean()))
+    risk_count = int((sim["Risco previsto"] >= 75).sum())
+    adapt_count = int((sim["Decisão"] != "Executa").sum())
+
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: metric_card("Prontidão média atual", f"{avg_now}%", group_label)
+    with c2: metric_card("Prontidão média prevista", f"{avg_after}%", "após treino")
+    with c3: metric_card("Militares a adaptar", adapt_count, "monitorizar ou retirar")
+    with c4: metric_card("Risco elevado previsto", risk_count, "risco ≥ 75")
+
+    if risk_count > 0:
+        st.error(f"Ajustar plano: {risk_count} militar(es) ficariam em risco elevado. Reduzir intensidade/carga ou criar variante adaptada.")
+    elif avg_after < 60:
+        st.warning("Treino possível, mas agressivo para o estado atual do grupo. Recomenda-se reduzir volume ou intensidade.")
+    else:
+        st.success("Treino compatível com o estado atual do grupo. Manter monitorização pós-sessão.")
+
+    v1, v2 = st.columns([1.15, 1])
+    with v1:
+        plot_df = sim.sort_values("Prontidão prevista", ascending=True)
+        fig = px.bar(
+            plot_df,
+            x="Prontidão prevista",
+            y="full_name",
+            color="Decisão",
+            color_discrete_map={"Executa": "#22c55e", "Monitorizar": "#f59e0b", "Retirar/Adaptar": "#ef4444"},
+            labels={"full_name": "Militar", "Prontidão prevista": "Prontidão prevista"},
+            title="Impacto previsto por militar",
+        )
+        fig.update_layout(height=430, legend_title_text="Decisão")
+        st.plotly_chart(fig, use_container_width=True)
+    with v2:
+        fig = px.scatter(
+            sim,
+            x="Prontidão prevista",
+            y="Risco previsto",
+            color="Decisão",
+            size="recovery_score",
+            hover_name="full_name",
+            color_discrete_map={"Executa": "#22c55e", "Monitorizar": "#f59e0b", "Retirar/Adaptar": "#ef4444"},
+            title="Risco previsto vs prontidão prevista",
+        )
+        fig.update_layout(height=430)
+        st.plotly_chart(fig, use_container_width=True)
+
+    table_cols = ["rank", "full_name", "status", "Prontidão atual", "Prontidão prevista", "Risco atual", "Risco previsto", "Impacto", "Decisão"]
+    st.dataframe(sim[table_cols].sort_values(["Decisão", "Prontidão prevista"]), use_container_width=True, hide_index=True)
+
+    with st.expander("Resumo dos parâmetros simulados"):
+        st.json({k: v for k, v in params.items() if k not in ["load_factor", "risk_factor"]})
+
+    if st.button("Guardar simulação coletiva", use_container_width=True):
+        try:
+            payloads = []
+            for _, row in sim.iterrows():
+                payloads.append({
+                    "soldier_id": row["soldier_id"],
+                    "created_by": profile["id"],
+                    "training_type": f"{params['training_type']} · {group_label}",
+                    "duration_min": int(params.get("duration", 45)),
+                    "intensity": int(params.get("intensity", 6)),
+                    "focus_area": str(params.get("focus", "Grupo")),
+                    "predicted_readiness": int(row["Prontidão prevista"]),
+                    "predicted_injury_risk": int(row["Risco previsto"]),
+                    "recommendation": str(row["Decisão"]),
+                })
+            sb_insert_many("training_simulations", payloads)
+            st.success("Simulação coletiva guardada na base de dados, associada a cada militar do grupo.")
+        except Exception as exc:
+            st.error("Não foi possível guardar a simulação coletiva.")
+            st.caption(str(exc))
+
+
+def simulate_individual_training(profile: Dict[str, Any]) -> None:
+    st.markdown('<div class="section-title">Simulador de treino individual</div>', unsafe_allow_html=True)
     all_soldiers = get_soldiers()
     if all_soldiers.empty:
         st.warning("Não há militares acessíveis.")
         return
 
-    if profile.get("role") == "militar":
-        own = get_soldier_for_profile(profile["id"])
-        if not own:
-            st.error("Este utilizador ainda não tem militar associado.")
-            return
-        soldier_id = own["id"]
-        soldier_name = f"{own.get('rank','')} {own['full_name']}"
-        st.info(f"Simulação para: {soldier_name}")
-    else:
-        name_map = {f"{row.get('rank','')} {row['full_name']}": row["id"] for _, row in all_soldiers.iterrows()}
-        soldier_name = st.selectbox("Militar", list(name_map.keys()))
-        soldier_id = name_map[soldier_name]
+    own = get_soldier_for_profile(profile["id"])
+    if not own:
+        st.error("Este utilizador ainda não tem militar associado.")
+        return
+    soldier_id = own["id"]
+    soldier_name = f"{own.get('rank','')} {own['full_name']}"
+    st.info(f"Simulação para: {soldier_name}")
 
     latest = df_from("readiness_scores", order="score_date", desc=True, filters=[("soldier_id", "eq", soldier_id)])
     if latest.empty:
@@ -609,6 +861,12 @@ def simulate_training(profile: Dict[str, Any]) -> None:
             st.caption(str(exc))
 
 
+def simulate_training(profile: Dict[str, Any]) -> None:
+    if profile.get("role") == "militar":
+        simulate_individual_training(profile)
+    else:
+        simulate_group_training(profile)
+
 def admin_page(profile: Dict[str, Any]) -> None:
     if profile.get("role") != "admin":
         st.error("Acesso reservado a administrador.")
@@ -621,6 +879,12 @@ def admin_page(profile: Dict[str, Any]) -> None:
 
 
 def main() -> None:
+    try:
+        if st.query_params.get("logout"):
+            logout()
+    except Exception:
+        pass
+
     profile = require_login()
     page = top_bar(profile)
 
