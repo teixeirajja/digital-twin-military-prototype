@@ -1,0 +1,14 @@
+id,posto,nome,genero,idade,altura_cm,peso_kg,unidade,pelotao,funcao,role,cooper_m,fc_repouso,sono_h,fadiga,dor_muscular,historico_lesao,estado
+C001,Cap,José Teixeira,M,32,180,82,ERec,Comando,Comandante,comandante,3000,54,7.0,3,2,Não,Ativo
+M001,Ten,Hugo Dias,M,29,178,79,ERec,1º Pelotão,Cmdt Pelotão,militar,2920,55,7.2,3,2,Não,Operacional
+M002,Sarg,Inês Vicente,F,31,166,62,ERec,1º Pelotão,Adjunta,militar,2650,58,6.8,4,3,Não,Operacional
+M003,Fur,Miguel Almeida,M,26,182,84,ERec,1º Pelotão,Atirador,militar,2780,60,6.1,5,4,Entorse tornozelo,Atenção
+M004,Sold,Rafael Costa,M,23,175,76,ERec,1º Pelotão,Explorador,militar,3050,52,7.6,2,1,Não,Operacional
+M005,Sold,João Pereira,M,24,173,74,ERec,2º Pelotão,Condutor,militar,2480,66,5.8,6,5,Dor lombar,Risco
+M006,Sold,Diogo Martins,M,22,181,80,ERec,2º Pelotão,Atirador,militar,2860,57,6.9,4,2,Não,Operacional
+M007,Sold,Bruno Lopes,M,25,176,83,ERec,2º Pelotão,Sapador,militar,2380,69,5.5,7,6,Tendinite joelho,Risco
+M008,Sold,Ana Ribeiro,F,24,164,59,ERec,2º Pelotão,Transmissões,militar,2550,61,6.4,5,3,Não,Atenção
+M009,Sold,Pedro Santos,M,27,179,77,ERec,3º Pelotão,Explorador,militar,3150,50,7.8,2,1,Não,Operacional
+M010,Sold,Tiago Carvalho,M,28,183,88,ERec,3º Pelotão,Metralhador,militar,2710,59,6.5,5,4,Não,Atenção
+M011,Sold,Francisco Silva,M,21,170,68,ERec,3º Pelotão,Atirador,militar,2950,54,7.3,3,2,Não,Operacional
+M012,Sold,Mariana Ferreira,F,23,168,61,ERec,3º Pelotão,Socorrista,militar,2620,60,6.7,4,3,Não,Operacional
