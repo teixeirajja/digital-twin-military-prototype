@@ -24,271 +24,237 @@ st.set_page_config(
 CSS = """
 <style>
 /* ------------------------------------------------------------------
-   DARK MILITARY LOCAL-PROTOTYPE STYLE
-   Keeps all Supabase data/logic unchanged; only changes presentation.
+   BALANCED PROFESSIONAL MILITARY UI
+   Less dark, more readable; data/login/permissions logic preserved.
 -------------------------------------------------------------------*/
 :root {
-    --bg0: #020603;
-    --bg1: #06140a;
-    --panel: #08190d;
-    --panel2: #0c2111;
-    --border: rgba(205, 197, 64, .42);
-    --line: rgba(197, 188, 55, .25);
-    --neon: #9fd134;
-    --yellow: #d7c13a;
-    --orange: #f59e0b;
+    --page: #eef2e6;
+    --page2: #f7f8f1;
+    --ink: #102015;
+    --muted: #68745f;
+    --panel: #ffffff;
+    --panel-soft: #f9fbf3;
+    --border: rgba(34, 75, 40, .16);
+    --border-strong: rgba(34, 75, 40, .28);
+    --green-900: #05200f;
+    --green-800: #0b3418;
+    --green-700: #14532d;
+    --green-600: #166534;
+    --green-500: #22c55e;
+    --yellow: #d7b92f;
+    --amber: #f59e0b;
     --red: #ef4444;
-    --green: #22c55e;
-    --text: #f5f7dd;
-    --muted: #aeb989;
+    --shadow: 0 16px 42px rgba(16, 32, 21, .10);
 }
 
 html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
     background:
-        radial-gradient(circle at 50% 0%, rgba(30, 84, 37, .30), transparent 36%),
-        radial-gradient(circle at 92% 18%, rgba(157, 209, 52, .10), transparent 24%),
-        linear-gradient(180deg, #000905 0%, #020a05 45%, #000703 100%) !important;
-    color: var(--text) !important;
+        radial-gradient(circle at 10% 0%, rgba(34, 197, 94, .10), transparent 28%),
+        radial-gradient(circle at 90% 8%, rgba(215, 185, 47, .13), transparent 25%),
+        linear-gradient(180deg, var(--page2) 0%, var(--page) 56%, #e7ecd9 100%) !important;
+    color: var(--ink) !important;
 }
 .block-container {
-    padding-top: 2.0rem;
-    padding-bottom: 2.2rem;
-    max-width: 1540px;
-    width: min(1540px, 94vw);
+    padding-top: 1.15rem;
+    padding-bottom: 2.4rem;
+    max-width: 1680px !important;
+    width: min(1680px, 96vw) !important;
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
+#MainMenu, footer, header {visibility: hidden;}
 [data-testid="stToolbar"] {visibility: hidden; height: 0%; position: fixed;}
-[data-testid="stDecoration"] {display: none;}
-[data-testid="stStatusWidget"] {visibility: hidden;}
-[data-testid="stHeader"] {display: none;}
+[data-testid="stDecoration"], [data-testid="stStatusWidget"], [data-testid="stHeader"] {display: none;}
 
-/* Core text */
 h1, h2, h3, h4, h5, h6, p, label, span, div {font-family: "Inter", "Segoe UI", Arial, sans-serif;}
-h1, h2, h3, h4 {color: var(--text) !important;}
+h1, h2, h3, h4 {color: var(--ink) !important;}
 [data-testid="stMarkdownContainer"] p {color: var(--muted);}
-hr {border-color: var(--line) !important;}
+hr {border-color: rgba(34,75,40,.18) !important;}
 
-/* Inputs - old local dark look */
-.stTextInput input, .stPassword input, .stSelectbox [data-baseweb="select"], .stNumberInput input,
-.stDateInput input, .stMultiSelect [data-baseweb="select"] {
-    background: #1f2230 !important;
-    color: #fffbe6 !important;
-    border: 1px solid rgba(215,193,58,.32) !important;
-    border-radius: 9px !important;
-    min-height: 38px;
+/* Inputs */
+.stTextInput input, .stPassword input, .stNumberInput input, .stDateInput input,
+.stSelectbox [data-baseweb="select"], .stMultiSelect [data-baseweb="select"] {
+    background: #ffffff !important;
+    color: var(--ink) !important;
+    border: 1px solid rgba(20, 83, 45, .23) !important;
+    border-radius: 12px !important;
+    min-height: 42px;
+    box-shadow: 0 6px 18px rgba(16,32,21,.05) !important;
 }
-.stTextInput input::placeholder {color: rgba(245,247,221,.45) !important;}
-[data-baseweb="popover"] {background:#0b170d !important; color:var(--text) !important;}
+.stTextInput input::placeholder {color: rgba(16,32,21,.40) !important;}
 .stSelectbox label, .stSlider label, .stCheckbox label, .stRadio label, .stTextInput label {
-    color: #ecf1c3 !important;
-    font-weight: 800 !important;
-    font-size: .80rem !important;
+    color: #213322 !important;
+    font-weight: 750 !important;
+    font-size: .83rem !important;
 }
-.stSlider [data-testid="stTickBar"] {background: rgba(215,193,58,.15) !important;}
-.stCheckbox span {color: #ecf1c3 !important;}
+.stCheckbox span {color:#213322 !important;}
+[data-baseweb="popover"] {background:#ffffff !important; color:var(--ink) !important;}
 
 /* Buttons */
 .stButton > button, .stFormSubmitButton > button {
-    border-radius: 8px !important;
-    border: 1px solid rgba(215,193,58,.55) !important;
-    background: #0c2111 !important;
-    color: #f1df6a !important;
-    font-weight: 900 !important;
-    letter-spacing: .03em !important;
-    box-shadow: 0 0 0 1px rgba(159,209,52,.10) inset !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(20,83,45,.25) !important;
+    background: #ffffff !important;
+    color: var(--green-700) !important;
+    font-weight: 850 !important;
+    letter-spacing: .01em !important;
+    min-height: 42px;
+    box-shadow: 0 8px 22px rgba(16,32,21,.07) !important;
 }
 .stButton > button:hover, .stFormSubmitButton > button:hover {
-    background: #162d17 !important;
+    background: var(--green-700) !important;
     color: #ffffff !important;
-    border-color: rgba(159,209,52,.85) !important;
+    border-color: var(--green-700) !important;
 }
 
-/* Login page - same spirit as local prototype */
-.login-shell {
-    max-width: 760px;
-    margin: 7vh auto 0 auto;
-}
+/* Login */
+.login-shell {max-width: 980px; margin: 6vh auto 0 auto;}
 .login-hero {
-    padding: 20px 22px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, rgba(6,20,10,.96), rgba(9,31,13,.92));
-    border: 1px solid rgba(215,193,58,.42);
-    box-shadow: 0 24px 60px rgba(0,0,0,.44), inset 0 0 28px rgba(46,125,50,.10);
+    padding: 22px 24px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, var(--green-900), var(--green-700));
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 28px 70px rgba(16,32,21,.26);
+    color:#fff;
 }
-.login-hero-top {display:flex; align-items:center; justify-content:space-between; gap:16px;}
-.login-brand {display:flex; align-items:center; gap:14px;}
-.login-logo {
-    width:52px; height:52px; border-radius:12px;
-    background:#0d2210; border:1px solid rgba(215,193,58,.45);
-    display:flex; align-items:center; justify-content:center; font-size:1.45rem;
-}
-.login-title {
-    margin:0; color:#fff7b5 !important; font-size:1.58rem; font-weight:950;
-    letter-spacing:.18em; text-transform:uppercase;
-}
-.login-subtitle {margin:6px 0 0 0; color:#d0c264 !important; font-size:.78rem; font-weight:800;}
-.login-badge {
-    color:#dfff85; background:#071207; border:1px solid rgba(215,193,58,.40);
-    border-radius:8px; padding:9px 13px; font-size:.72rem; font-weight:950; text-transform:uppercase;
-}
-.login-grid {
-    margin-top:12px;
-    border:1px solid rgba(215,193,58,.36);
-    border-radius:16px;
-    overflow:hidden;
-    background:#06110a;
-    box-shadow: 0 18px 50px rgba(0,0,0,.36);
-}
+.login-hero-top {display:flex; align-items:center; justify-content:space-between; gap:18px;}
+.login-brand {display:flex; align-items:center; gap:16px;}
+.login-logo {width:54px; height:54px; border-radius:16px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.20); display:flex; align-items:center; justify-content:center; font-size:1.45rem;}
+.login-title {margin:0; color:#fff8cf !important; font-size:1.55rem; font-weight:950; letter-spacing:.10em; text-transform:uppercase;}
+.login-subtitle {margin:6px 0 0 0; color:#d9e9c6 !important; font-size:.84rem; font-weight:700;}
+.login-badge {color:#fff8cf; background:rgba(0,0,0,.18); border:1px solid rgba(255,248,207,.25); border-radius:999px; padding:9px 14px; font-size:.76rem; font-weight:900; text-transform:uppercase;}
+.login-grid {margin-top:16px; border:1px solid var(--border); border-radius:22px; overflow:hidden; background:#fff; box-shadow: var(--shadow);}
 .login-info {display:none;}
-.login-form-panel {padding:22px 22px 16px 22px; background: rgba(6,17,9,.96);}
-.login-form-title {color:#fff7b5 !important; font-size:1rem; font-weight:950; letter-spacing:.08em; text-transform:uppercase; margin:0 0 8px 0;}
-.login-form-subtitle {color:#d0c264 !important; margin:0 0 16px 0; font-size:.78rem; font-weight:700;}
-.login-demo {
-    margin-top:18px; background:#020805; color:#d0c264;
-    border:1px solid rgba(215,193,58,.28); border-radius:10px; padding:12px 14px;
-    font-size:.78rem;
-}
-.login-demo b {color:#fff7b5;}
-.login-demo code {background:#122116; color:#f4dd63; padding:2px 6px; border-radius:6px;}
-.login-foot {text-align:center; color:#8e986d; font-size:.75rem; margin-top:12px;}
+.login-form-panel {padding:24px; background:#ffffff;}
+.login-form-title {color:var(--green-800) !important; font-size:1rem; font-weight:950; letter-spacing:.06em; text-transform:uppercase; margin:0 0 8px 0;}
+.login-form-subtitle {color:var(--muted) !important; margin:0 0 16px 0; font-size:.84rem; font-weight:650;}
+.login-demo {margin-top:18px; background:#f5f7ed; color:#475240; border:1px solid var(--border); border-radius:14px; padding:14px 16px; font-size:.80rem;}
+.login-demo b {color:var(--green-800);} .login-demo code {background:#e7efdc; color:#14532d; padding:2px 6px; border-radius:7px;}
+.login-foot {text-align:center; color:#677160; font-size:.76rem; margin-top:12px;}
 [data-testid="stForm"] {border:none !important; padding:0 !important; box-shadow:none !important; background:transparent !important;}
 
-/* Top/header, based on the local dashboard */
+/* Header */
 .main-header {
-    border: 1px solid rgba(215,193,58,.46);
-    border-radius: 14px;
-    padding: 14px 18px;
-    background: linear-gradient(135deg, rgba(4,18,8,.98), rgba(11,34,14,.96));
-    color: var(--text);
-    margin: 0 auto 8px auto;
-    box-shadow: 0 18px 40px rgba(0,0,0,.32), inset 0 0 26px rgba(159,209,52,.07);
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    border-radius: 24px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, var(--green-900) 0%, var(--green-800) 58%, var(--green-700) 100%);
+    color: #fff;
+    margin: 0 0 18px 0;
+    box-shadow: 0 22px 55px rgba(16,32,21,.22);
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
 }
-.header-left h1 {
-    margin:0; color:#fff7b5 !important; font-size:1.34rem; font-weight:950;
-    letter-spacing:.16em; text-transform:uppercase;
-}
-.header-left p {margin:6px 0 0 0; color:#d0c264 !important; font-size:.78rem; font-weight:800;}
-.header-logout {
-    display:inline-flex; align-items:center; justify-content:center;
-    min-width:118px; padding:9px 13px; border-radius:8px;
-    border:1px solid rgba(215,193,58,.55);
-    color:#f1df6a !important; text-decoration:none !important; font-weight:950; letter-spacing:.04em;
-    background:#0b1a0d;
-}
-.header-logout:hover {background:#182b13; color:#fff !important; border-color:rgba(159,209,52,.8);}
-.nav-card {
-    padding:10px 12px; margin: 0 0 16px 0; border-radius:12px;
-    background: rgba(4,16,8,.75); border:1px solid rgba(215,193,58,.25);
-}
-.stRadio > div {gap:10px;}
-.stRadio [data-baseweb="radio"] {background:transparent !important;}
-.stRadio label {color:#efe7a0 !important; font-size:.82rem !important;}
+.header-left h1 {margin:0; color:#fff8cf !important; font-size:1.45rem; font-weight:950; letter-spacing:.10em; text-transform:uppercase;}
+.header-left p {margin:7px 0 0 0; color:#d8e7c7 !important; font-size:.83rem; font-weight:700;}
+.header-logout {display:inline-flex; align-items:center; justify-content:center; min-width:140px; padding:11px 16px; border-radius:14px; border:1px solid rgba(255,248,207,.30); color:#fff8cf !important; text-decoration:none !important; font-weight:900; background:rgba(0,0,0,.16);}
+.header-logout:hover {background:rgba(255,255,255,.13); color:#fff !important;}
 
-/* Titles and cards */
+/* Navigation - nicer segmented buttons */
+.nav-card {
+    padding: 8px;
+    margin: 0 0 22px 0;
+    border-radius: 18px;
+    background: rgba(255,255,255,.78);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 28px rgba(16,32,21,.07);
+    width: fit-content;
+}
+.stRadio > div[role="radiogroup"] {display:flex; gap:8px; flex-wrap:wrap;}
+.stRadio label {
+    padding: 10px 16px !important;
+    min-height: 42px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(20,83,45,.18) !important;
+    background: #ffffff !important;
+    color: var(--green-800) !important;
+    box-shadow: 0 5px 14px rgba(16,32,21,.05);
+}
+.stRadio label:has(input:checked) {
+    background: linear-gradient(135deg, var(--green-800), var(--green-600)) !important;
+    color: #fff8cf !important;
+    border-color: var(--green-600) !important;
+}
+.stRadio label div {color:inherit !important;}
+.stRadio [data-baseweb="radio"] {background:transparent !important;}
+
+/* Section titles/cards */
 .section-title {
-    color:#fff7b5 !important;
-    font-size:1.08rem; font-weight:950; margin:12px 0 12px;
-    text-transform:uppercase; letter-spacing:.09em;
-    border:1px solid rgba(215,193,58,.38);
-    border-radius:10px;
-    padding:11px 13px;
-    background: rgba(6,20,10,.92);
+    color: var(--green-900) !important;
+    font-size:1.15rem; font-weight:950; margin:10px 0 14px;
+    letter-spacing:.04em;
+    border:1px solid var(--border);
+    border-left: 6px solid var(--green-700);
+    border-radius: 16px;
+    padding: 14px 16px;
+    background: #ffffff;
+    box-shadow: var(--shadow);
 }
 .metric-card {
-    background: linear-gradient(180deg, #071609, #0a1d0d);
-    border: 1px solid rgba(215,193,58,.34);
-    border-radius: 10px;
-    padding: 13px 14px;
-    min-height: 106px;
-    color: var(--text);
-    box-shadow: inset 0 0 18px rgba(159,209,52,.05), 0 10px 24px rgba(0,0,0,.18);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px 18px;
+    min-height: 118px;
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow:hidden;
 }
-.metric-card small {color:#d0c264; font-size:.72rem; font-weight:950; text-transform:uppercase; letter-spacing:.08em;}
-.metric-card h2 {font-size:1.85rem; margin: 11px 0 3px 0; font-weight:950; color:#f3d93c !important;}
-.metric-card p {margin:0; color:#aeb989; font-size:.75rem; font-weight:700;}
-.soft-card {
-    padding: 16px; border-radius: 12px; background:#06140a;
-    border: 1px solid rgba(215,193,58,.35);
-    box-shadow: 0 14px 28px rgba(0,0,0,.24);
+.metric-card:before {content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background: linear-gradient(180deg, var(--green-600), var(--yellow));}
+.metric-card small {color:var(--green-700); font-size:.72rem; font-weight:950; text-transform:uppercase; letter-spacing:.07em;}
+.metric-card h2 {font-size:2.0rem; margin: 13px 0 3px 0; font-weight:950; color:var(--green-900) !important;}
+.metric-card p {margin:0; color:var(--muted); font-size:.78rem; font-weight:650;}
+.soft-card, .info-card {
+    padding: 18px; border-radius: 18px; background:#ffffff;
+    border: 1px solid var(--border); box-shadow: var(--shadow);
 }
-.footer-note {color:#8e986d;font-size:0.78rem;margin-top:16px;}
+.info-card h3 {margin:0 0 8px 0; font-size:1.05rem; color:var(--green-900) !important;}
+.info-card p {margin:0 0 8px 0; color:var(--muted);}
+.privacy-note {font-size:.80rem; color:#5d6758; background:#eef5e7; border:1px solid rgba(20,83,45,.13); padding:10px 12px; border-radius:12px; margin-bottom:12px;}
+.band-list {display:grid; gap:10px; margin-top:10px;}
+.band-row {display:grid; grid-template-columns: 150px 1fr 48px; gap:12px; align-items:center; color:#263427; font-weight:700; font-size:.86rem;}
+.band-track {height:10px; border-radius:999px; background:#e4eadc; overflow:hidden; border:1px solid rgba(20,83,45,.12);}
+.band-fill {height:100%; border-radius:999px;}
+.action-box {background:linear-gradient(135deg,#ffffff,#f5f8ee); border:1px solid var(--border); border-radius:16px; padding:14px 16px; margin-top:10px;}
+.action-box b {color:var(--green-900);} .action-box span {color:var(--muted);}
+.footer-note {color:#697463;font-size:0.78rem;margin-top:16px;}
 
 /* Alerts */
-.stAlert {
-    background: rgba(6,20,10,.85) !important;
-    border: 1px solid rgba(215,193,58,.32) !important;
-    color: var(--text) !important;
-}
-.stAlert p {color: var(--text) !important;}
+.stAlert {background:#ffffff !important; border: 1px solid var(--border) !important; color:var(--ink) !important; border-radius:16px !important; box-shadow: 0 10px 26px rgba(16,32,21,.05) !important;}
+.stAlert p {color: var(--ink) !important;}
 
-/* Product tables in local dark style */
-.table-card {
-    background: #06140a;
-    border: 1px solid rgba(215,193,58,.38);
-    border-radius: 12px;
-    box-shadow: 0 16px 34px rgba(0,0,0,.28);
-    overflow: hidden;
-    margin-top: 10px;
-    margin-bottom: 22px;
-}
-.table-head {
-    padding: 12px 14px;
-    background: linear-gradient(90deg, #06140a 0%, #0a2110 72%, #132b0f 100%);
-    color: #fff7b5;
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    border-bottom:1px solid rgba(215,193,58,.32);
-}
-.table-head-title {font-weight: 950; font-size: .88rem; letter-spacing:.10em; text-transform:uppercase; color:#fff7b5;}
-.table-head-subtitle {font-size: .72rem; color:#d0c264; font-weight:800;}
+/* Tables */
+.table-card {background:#ffffff; border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow); overflow:hidden; margin-top:12px; margin-bottom:24px;}
+.table-head {padding:14px 16px; background:linear-gradient(90deg, var(--green-900), var(--green-700)); color:#fff8cf; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid rgba(255,255,255,.15);}
+.table-head-title {font-weight:950; font-size:.90rem; letter-spacing:.07em; text-transform:uppercase; color:#fff8cf;}
+.table-head-subtitle {font-size:.75rem; color:#dbe8c6; font-weight:750;}
 .table-scroll {overflow-x:auto;}
-table.pretty-table {width:100%; border-collapse: collapse; font-size:.80rem;}
-.pretty-table th {
-    text-align:left; background:#0d1d0d; color:#d9d06a; font-weight:950;
-    padding:9px 10px; border-bottom:1px solid rgba(215,193,58,.28); white-space:nowrap;
-}
-.pretty-table td {
-    padding:8px 10px; border-bottom:1px solid rgba(215,193,58,.13);
-    color:#e7edd3; vertical-align:middle; white-space:nowrap;
-}
-.pretty-table tr:nth-child(even) td {background:rgba(255,255,255,.025);}
-.pretty-table tr:hover td {background:rgba(159,209,52,.075);}
+table.pretty-table {width:100%; border-collapse: collapse; font-size:.82rem;}
+.pretty-table th {text-align:left; background:#f3f6ed; color:#354333; font-weight:900; padding:10px 11px; border-bottom:1px solid rgba(20,83,45,.12); white-space:nowrap;}
+.pretty-table td {padding:10px 11px; border-bottom:1px solid rgba(20,83,45,.08); color:#1d2a1e; vertical-align:middle; white-space:nowrap;}
+.pretty-table tr:nth-child(even) td {background:#fbfcf7;}
+.pretty-table tr:hover td {background:#eff6e9;}
 .pretty-table tr:last-child td {border-bottom:none;}
-.name-cell {font-weight:900; color:#fffde1;}
-.rank-cell {font-weight:900; color:#f1df6a;}
+.name-cell {font-weight:850; color:#102015;} .rank-cell {font-weight:850; color:#14532d;}
 .value-wrap {display:flex; align-items:center; gap:8px; min-width:135px;}
-.value-number {font-weight:950; min-width:36px; text-align:right; font-variant-numeric:tabular-nums; color:#fff7b5;}
-.mini-track {height:7px; flex:1; min-width:70px; border-radius:999px; background:#132116; overflow:hidden; border:1px solid rgba(215,193,58,.18);}
-.mini-fill {height:100%; border-radius:999px;}
-.fill-good {background:#75cf3a;}
-.fill-warn {background:#f59e0b;}
-.fill-risk {background:#ef4444;}
-.status-pill, .decision-pill {
-    display:inline-flex; align-items:center; justify-content:center; padding:4px 9px;
-    border-radius:7px; font-weight:950; font-size:.68rem; white-space:nowrap; letter-spacing:.02em;
-}
-.pill-pronto {background:rgba(34,197,94,.18); color:#95f06e; border:1px solid rgba(34,197,94,.42);}
-.pill-atencao {background:rgba(245,158,11,.18); color:#ffd166; border:1px solid rgba(245,158,11,.48);}
-.pill-risco {background:rgba(239,68,68,.18); color:#ff8080; border:1px solid rgba(239,68,68,.48);}
-.pill-executa {background:rgba(34,197,94,.18); color:#95f06e; border:1px solid rgba(34,197,94,.42);}
-.pill-monitorizar {background:rgba(245,158,11,.18); color:#ffd166; border:1px solid rgba(245,158,11,.48);}
-.pill-retirar {background:rgba(239,68,68,.18); color:#ff8080; border:1px solid rgba(239,68,68,.48);}
-.delta-neg {font-weight:950; color:#ff8080;}
-.delta-pos {font-weight:950; color:#95f06e;}
-.delta-zero {font-weight:950; color:#d0c264;}
+.value-number {font-weight:900; min-width:36px; text-align:right; font-variant-numeric:tabular-nums; color:#102015;}
+.mini-track {height:8px; flex:1; min-width:70px; border-radius:999px; background:#e3eadc; overflow:hidden; border:1px solid rgba(20,83,45,.10);}
+.mini-fill {height:100%; border-radius:999px;} .fill-good {background:#22c55e;} .fill-warn {background:#f59e0b;} .fill-risk {background:#ef4444;}
+.status-pill, .decision-pill {display:inline-flex; align-items:center; justify-content:center; padding:5px 10px; border-radius:999px; font-weight:900; font-size:.70rem; white-space:nowrap;}
+.pill-pronto {background:#dcfce7; color:#166534; border:1px solid #86efac;} .pill-atencao {background:#fef3c7; color:#92400e; border:1px solid #fcd34d;} .pill-risco {background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;}
+.pill-executa {background:#dcfce7; color:#166534; border:1px solid #86efac;} .pill-monitorizar {background:#fef3c7; color:#92400e; border:1px solid #fcd34d;} .pill-retirar {background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;}
+.delta-neg {font-weight:950; color:#dc2626;} .delta-pos {font-weight:950; color:#16a34a;} .delta-zero {font-weight:950; color:#92400e;}
 
-/* Dataframes and expanders */
-[data-testid="stDataFrame"] {background:#06140a !important; border:1px solid rgba(215,193,58,.28) !important; border-radius:12px !important; overflow:hidden;}
-.streamlit-expanderHeader {background:#06140a !important; color:#fff7b5 !important; border:1px solid rgba(215,193,58,.28) !important; border-radius:10px !important;}
+[data-testid="stDataFrame"] {background:#ffffff !important; border:1px solid var(--border) !important; border-radius:18px !important; overflow:hidden; box-shadow: var(--shadow) !important;}
+.streamlit-expanderHeader {background:#ffffff !important; color:var(--green-900) !important; border:1px solid var(--border) !important; border-radius:12px !important;}
 
 @media (max-width: 900px) {
-    .block-container {padding-left: .9rem; padding-right: .9rem;}
+    .block-container {padding-left: 1rem; padding-right: 1rem; width: 98vw !important;}
     .main-header {align-items:flex-start; flex-direction:column;}
-    .header-left h1 {font-size:1.08rem;}
-    .login-title {font-size:1.25rem; letter-spacing:.10em;}
-    .login-hero-top {align-items:flex-start; flex-direction:column;}
+    .header-left h1 {font-size:1.15rem;}
+    .nav-card {width:100%;}
+    .stRadio > div[role="radiogroup"] {width:100%;}
+    .stRadio label {flex:1; justify-content:center;}
+    .band-row {grid-template-columns: 115px 1fr 42px;}
 }
 </style>
 """
@@ -546,26 +512,26 @@ def metric_card(label: str, value: Any, caption: str) -> None:
 
 
 def apply_chart_style(fig: go.Figure, height: int = 460) -> go.Figure:
-    """Applies the original local prototype dark military visual language to Plotly figures."""
+    """Professional light military styling for Plotly figures."""
     fig.update_layout(
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="#06140a",
-        font=dict(family="Inter, Arial, sans-serif", color="#dce7b6"),
-        title=dict(font=dict(size=15, color="#fff7b5"), x=0.02),
-        margin=dict(l=18, r=18, t=50, b=24),
+        plot_bgcolor="#ffffff",
+        font=dict(family="Inter, Arial, sans-serif", color="#213322"),
+        title=dict(font=dict(size=16, color="#05200f"), x=0.02),
+        margin=dict(l=28, r=24, t=54, b=34),
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.02,
             xanchor="right",
             x=1,
-            font=dict(color="#dce7b6"),
-            bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#354333"),
+            bgcolor="rgba(255,255,255,.75)",
         ),
     )
-    fig.update_xaxes(gridcolor="rgba(215,193,58,.16)", zerolinecolor="rgba(215,193,58,.25)", linecolor="rgba(215,193,58,.25)")
-    fig.update_yaxes(gridcolor="rgba(215,193,58,.16)", zerolinecolor="rgba(215,193,58,.25)", linecolor="rgba(215,193,58,.25)")
+    fig.update_xaxes(gridcolor="rgba(20,83,45,.10)", zerolinecolor="rgba(20,83,45,.18)", linecolor="rgba(20,83,45,.18)")
+    fig.update_yaxes(gridcolor="rgba(20,83,45,.10)", zerolinecolor="rgba(20,83,45,.18)", linecolor="rgba(20,83,45,.18)")
     return fig
 
 
@@ -718,7 +684,7 @@ def digital_twin_figure(muscle: Dict[str, Any], title: str = "Digital Twin — c
         fig.add_annotation(x=cx, y=cy, text=f"{label}<br>{val}%", showarrow=False, font=dict(color="white", size=12))
     fig.update_xaxes(visible=False, range=[0, 1])
     fig.update_yaxes(visible=False, range=[0, 1])
-    fig.update_layout(height=520, title=title, margin=dict(l=10, r=10, t=45, b=10), plot_bgcolor="white")
+    fig.update_layout(height=520, title=title, margin=dict(l=10, r=10, t=45, b=10), plot_bgcolor="#ffffff", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#213322"))
     return fig
 
 # -----------------------------
@@ -737,8 +703,8 @@ def top_bar(profile: Dict[str, Any]) -> str:
     st.markdown(f"""
     <div class="main-header">
         <div class="header-left">
-            <h1>Digital Twin Militar</h1>
-            <p>▲ Sessão iniciada · {html.escape(str(profile.get('rank','')))} {html.escape(str(profile.get('full_name','')))} · {html.escape(str(ROLE_LABELS.get(profile.get('role'), profile.get('role'))))}</p>
+            <h1>Military Digital Twin</h1>
+            <p>Sessão iniciada · {html.escape(str(profile.get('rank','')))} {html.escape(str(profile.get('full_name','')))} · {html.escape(str(ROLE_LABELS.get(profile.get('role'), profile.get('role'))))}</p>
         </div>
         <a class="header-logout" href="?logout=1" target="_self">Terminar sessão</a>
     </div>
@@ -852,6 +818,104 @@ def commander_dashboard(profile: Dict[str, Any]) -> None:
         )
 
 
+
+def _risk_band(value: Any) -> str:
+    try:
+        val = float(value)
+    except Exception:
+        return "Sem dados"
+    if val >= 70:
+        return "Elevado"
+    if val >= 45:
+        return "Moderado"
+    return "Baixo"
+
+
+def _availability_text(status: str, risk: Any, readiness: Any) -> str:
+    try:
+        r = float(risk)
+        p = float(readiness)
+    except Exception:
+        return "Avaliação pendente"
+    if status == "Risco" or r >= 70 or p < 55:
+        return "Não recomendado para esforço intenso"
+    if status == "Atenção" or r >= 45 or p < 75:
+        return "Apto com controlo de carga"
+    return "Apto para treino normal"
+
+
+def _commander_action(status: str, risk: Any, readiness: Any, recovery: Any) -> str:
+    try:
+        r = float(risk)
+        p = float(readiness)
+        rec = float(recovery)
+    except Exception:
+        return "Completar avaliação antes de planear carga intensa."
+    if status == "Risco" or r >= 70:
+        return "Reduzir impacto, evitar treino intenso e monitorizar nas próximas 24–48h."
+    if p < 65 or rec < 60:
+        return "Manter treino, mas com variante adaptada e controlo pós-sessão."
+    return "Pode integrar treino planeado; manter recolha de feedback pós-treino."
+
+
+def _bar_html(label: str, value: Any, polarity: str = "good") -> str:
+    try:
+        v = max(0, min(100, float(value)))
+        n = f"{int(round(v))}%"
+    except Exception:
+        v = 0
+        n = "—"
+    if polarity == "risk":
+        cls = "fill-risk" if v >= 65 else "fill-warn" if v >= 40 else "fill-good"
+    else:
+        cls = "fill-good" if v >= 75 else "fill-warn" if v >= 55 else "fill-risk"
+    return f"""
+    <div class="band-row">
+        <div>{html.escape(label)}</div>
+        <div class="band-track"><div class="band-fill {cls}" style="width:{v:.0f}%"></div></div>
+        <strong>{n}</strong>
+    </div>
+    """
+
+
+def render_commander_soldier_summary(soldier: Dict[str, Any], latest: Dict[str, Any], tlatest: Dict[str, Any], recs: pd.DataFrame) -> None:
+    status = str(latest.get("status", "Atenção"))
+    readiness = latest.get("readiness_score", "—")
+    risk = latest.get("injury_risk", "—")
+    recovery = latest.get("recovery_score", "—")
+    availability = _availability_text(status, risk, readiness)
+    risk_band = _risk_band(risk)
+    action = _commander_action(status, risk, readiness, recovery)
+    last_rec = "Sem recomendações críticas."
+    if not recs.empty:
+        r = recs.iloc[0]
+        last_rec = f"{r.get('priority','')} · {r.get('title','')} — {r.get('message','')}"
+
+    left, right = st.columns([1.05, 1])
+    with left:
+        st.markdown(f"""
+        <div class="info-card">
+            <h3>Resumo operacional autorizado</h3>
+            <div class="privacy-note">Visão de comandante: apresenta indicadores de prontidão e decisão operacional. Dados pessoais sensíveis são omitidos nesta vista.</div>
+            <div class="band-list">
+                {_bar_html('Prontidão', readiness, 'good')}
+                {_bar_html('Risco', risk, 'risk')}
+                {_bar_html('Recuperação', recovery, 'good')}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with right:
+        st.markdown(f"""
+        <div class="info-card">
+            <h3>Decisão para planeamento</h3>
+            <p><b>Disponibilidade:</b> {html.escape(availability)}</p>
+            <p><b>Nível de risco:</b> {html.escape(risk_band)}</p>
+            <p><b>Último Cooper registado:</b> {html.escape(str(tlatest.get('cooper_m', '—')))} m</p>
+            <div class="action-box"><b>Ação recomendada:</b><br><span>{html.escape(action)}</span></div>
+            <div class="action-box"><b>Recomendação mais recente:</b><br><span>{html.escape(last_rec)}</span></div>
+        </div>
+        """, unsafe_allow_html=True)
+
 def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = None) -> Optional[str]:
     all_soldiers = get_soldiers()
     if all_soldiers.empty:
@@ -885,6 +949,16 @@ def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = Non
     dlatest = daily.iloc[0].to_dict() if not daily.empty else {}
     tlatest = tests.iloc[0].to_dict() if not tests.empty else {}
 
+    if role != "militar":
+        c1, c2, c3, c4 = st.columns(4)
+        with c1: metric_card("Prontidão", f"{latest.get('readiness_score', '—')}%", latest.get("status", "sem estado"))
+        with c2: metric_card("Risco operacional", _risk_band(latest.get('injury_risk')), "sem detalhes clínicos")
+        with c3: metric_card("Disponibilidade", _availability_text(str(latest.get('status', 'Atenção')), latest.get('injury_risk'), latest.get('readiness_score')), "para planeamento")
+        with c4: metric_card("Cooper", f"{tlatest.get('cooper_m', '—')} m", "último teste")
+        st.divider()
+        render_commander_soldier_summary(soldier, latest, tlatest, recs)
+        return soldier_id
+
     c1, c2, c3, c4 = st.columns(4)
     with c1: metric_card("Prontidão", f"{latest.get('readiness_score', '—')}%", latest.get("status", "sem estado"))
     with c2: metric_card("Risco de lesão", f"{latest.get('injury_risk', '—')}%", "estimativa atual")
@@ -898,6 +972,7 @@ def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = Non
             trend = readiness.sort_values("score_date")
             fig = px.line(trend, x="score_date", y=["readiness_score", "injury_risk", "recovery_score"], markers=True,
                           labels={"value": "Score", "score_date": "Data", "variable": "Métrica"}, title="Evolução do estado físico")
+            fig = apply_chart_style(fig, height=430)
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Sem histórico de prontidão.")
