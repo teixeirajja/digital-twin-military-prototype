@@ -22,7 +22,17 @@ st.set_page_config(
 # -----------------------------
 CSS = """
 <style>
-.block-container {padding-top: 1.1rem; padding-bottom: 2rem;}
+
+/* Push the app below Streamlit Cloud's owner toolbar and hide Streamlit UI elements when possible */
+.block-container {padding-top: 4.6rem; padding-bottom: 2rem;}
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+[data-testid="stToolbar"] {visibility: hidden; height: 0%; position: fixed;}
+[data-testid="stDecoration"] {display: none;}
+[data-testid="stStatusWidget"] {visibility: hidden;}
+[data-testid="stHeader"] {display: none;}
+
 .main-header {
     border-radius: 22px;
     padding: 26px 30px;
@@ -71,7 +81,16 @@ CSS = """
 .pill-atencao {background:#fef3c7;color:#92400e;}
 .pill-risco {background:#fee2e2;color:#991b1b;}
 .section-title {font-size: 1.22rem; font-weight: 800; margin: 8px 0 12px;}
+
+.nav-card {
+    padding: 12px 16px;
+    margin: 0 0 18px 0;
+    border-radius: 18px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+}
 .footer-note {color:#6b7280;font-size:0.82rem;margin-top:16px;}
+
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
@@ -221,7 +240,13 @@ def assemble_snapshot() -> pd.DataFrame:
     if soldiers.empty:
         return pd.DataFrame()
 
-    ids = soldiers["id"].tolist()
+    # The soldiers table also has a column called "status" (active/limited/etc.).
+    # The dashboard needs the operational readiness status from readiness_scores
+    # (Pronto/Atenção/Risco). Rename the soldier status to avoid pandas creating
+    # status_x/status_y and breaking the charts.
+    soldiers = soldiers.rename(columns={"id": "soldier_id", "status": "availability_status"})
+
+    ids = soldiers["soldier_id"].tolist()
     readiness = df_from("readiness_scores", order="score_date", desc=True, filters=[("soldier_id", "in", ids)])
     tests = df_from("physical_tests", order="test_date", desc=True, filters=[("soldier_id", "in", ids)])
     daily = df_from("daily_records", order="record_date", desc=True, filters=[("soldier_id", "in", ids)])
@@ -230,7 +255,7 @@ def assemble_snapshot() -> pd.DataFrame:
     tests_l = latest_by(tests, "soldier_id", "test_date") if not tests.empty else pd.DataFrame()
     daily_l = latest_by(daily, "soldier_id", "record_date") if not daily.empty else pd.DataFrame()
 
-    df = soldiers.rename(columns={"id": "soldier_id"})
+    df = soldiers.copy()
     if not readiness_l.empty:
         df = df.merge(readiness_l.drop(columns=["id", "created_at"], errors="ignore"), on="soldier_id", how="left")
     if not tests_l.empty:
@@ -238,6 +263,20 @@ def assemble_snapshot() -> pd.DataFrame:
     if not daily_l.empty:
         df = df.merge(daily_l.drop(columns=["id", "created_at"], errors="ignore"), on="soldier_id", how="left")
 
+    # Defensive fallback if a future schema change creates status_x/status_y again.
+    if "status" not in df.columns:
+        if "status_y" in df.columns:
+            df["status"] = df["status_y"]
+        elif "readiness_status" in df.columns:
+            df["status"] = df["readiness_status"]
+        else:
+            df["status"] = "Atenção"
+
+    for col in ["readiness_score", "injury_risk", "recovery_score", "cooper_m", "fatigue_score", "sleep_hours"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    df["status"] = df["status"].fillna("Atenção").astype(str)
     return df
 
 
@@ -297,25 +336,28 @@ def digital_twin_figure(muscle: Dict[str, Any], title: str = "Digital Twin — c
 # Pages
 # -----------------------------
 def top_bar(profile: Dict[str, Any]) -> str:
-    c1, c2, c3 = st.columns([5, 2, 1])
+    st.markdown(f"""
+    <div class="main-header">
+        <h1>Military Digital Twin</h1>
+        <p>{profile.get('rank','')} {profile.get('full_name','')} · {ROLE_LABELS.get(profile.get('role'), profile.get('role'))}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    role = profile.get("role")
+    page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino", "Admin"]
+    if role == "militar":
+        page_options = ["Militar", "Digital Twin", "Simular treino"]
+    elif role in ["comandante", "treinador"]:
+        page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino"]
+
+    st.markdown('<div class="nav-card">', unsafe_allow_html=True)
+    c1, c2 = st.columns([5, 1])
     with c1:
-        st.markdown(f"""
-        <div class="main-header">
-            <h1>Military Digital Twin</h1>
-            <p>{profile.get('rank','')} {profile.get('full_name','')} · {ROLE_LABELS.get(profile.get('role'), profile.get('role'))}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        choice = st.radio("Navegação", page_options, horizontal=True, label_visibility="collapsed")
     with c2:
-        page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino", "Admin"]
-        role = profile.get("role")
-        if role == "militar":
-            page_options = ["Militar", "Digital Twin", "Simular treino"]
-        elif role in ["comandante", "treinador"]:
-            page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino"]
-        choice = st.selectbox("Página", page_options, label_visibility="collapsed")
-    with c3:
         if st.button("Logout", use_container_width=True):
             logout()
+    st.markdown('</div>', unsafe_allow_html=True)
     return choice
 
 
@@ -326,7 +368,6 @@ def commander_dashboard(profile: Dict[str, Any]) -> None:
         st.warning("Ainda não há dados acessíveis para este utilizador.")
         return
 
-    platoons = ["Todos"] + sorted([x for x in df.get("platoon_id", pd.Series(dtype=str)).dropna().unique().tolist()])
     states = ["Todos"] + STATUS_ORDER
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -337,7 +378,7 @@ def commander_dashboard(profile: Dict[str, Any]) -> None:
         show_risk = st.checkbox("Mostrar só risco elevado", value=False)
 
     view = df.copy()
-    if state != "Todos":
+    if state != "Todos" and "status" in view.columns:
         view = view[view["status"] == state]
     if "readiness_score" in view.columns:
         view = view[view["readiness_score"].fillna(0) >= min_ready]
@@ -358,24 +399,49 @@ def commander_dashboard(profile: Dict[str, Any]) -> None:
     with m5: metric_card("Prontidão média", f"{avg_ready}%" if avg_ready != "—" else "—", "média da unidade")
 
     st.divider()
+    if view.empty:
+        st.warning("Nenhum militar corresponde aos filtros selecionados.")
+        return
+
     g1, g2 = st.columns([1, 1])
     with g1:
-        fig = px.bar(view.sort_values("readiness_score", ascending=True), x="readiness_score", y="full_name", color="status",
-                     color_discrete_map={"Pronto": "#22c55e", "Atenção": "#f59e0b", "Risco": "#ef4444"},
-                     labels={"readiness_score": "Prontidão", "full_name": "Militar"}, title="Prontidão por militar")
+        chart_df = view.sort_values("readiness_score", ascending=True).copy()
+        fig = px.bar(
+            chart_df,
+            x="readiness_score",
+            y="full_name",
+            color="status",
+            category_orders={"status": STATUS_ORDER},
+            color_discrete_map={"Pronto": "#22c55e", "Atenção": "#f59e0b", "Risco": "#ef4444"},
+            labels={"readiness_score": "Prontidão", "full_name": "Militar", "status": "Estado"},
+            title="Prontidão por militar",
+        )
         fig.update_layout(height=480, legend_title_text="Estado")
         st.plotly_chart(fig, use_container_width=True)
     with g2:
-        fig = px.scatter(view, x="readiness_score", y="injury_risk", size="recovery_score", color="status",
-                         hover_name="full_name", color_discrete_map={"Pronto": "#22c55e", "Atenção": "#f59e0b", "Risco": "#ef4444"},
-                         labels={"readiness_score": "Prontidão", "injury_risk": "Risco de lesão", "recovery_score": "Recuperação"},
-                         title="Prontidão vs risco de lesão")
+        fig = px.scatter(
+            view,
+            x="readiness_score",
+            y="injury_risk",
+            size="recovery_score",
+            color="status",
+            category_orders={"status": STATUS_ORDER},
+            hover_name="full_name",
+            color_discrete_map={"Pronto": "#22c55e", "Atenção": "#f59e0b", "Risco": "#ef4444"},
+            labels={"readiness_score": "Prontidão", "injury_risk": "Risco de lesão", "recovery_score": "Recuperação", "status": "Estado"},
+            title="Prontidão vs risco de lesão",
+        )
         fig.update_layout(height=480)
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown('<div class="section-title">Tabela operacional</div>', unsafe_allow_html=True)
     cols = [c for c in ["rank", "full_name", "status", "readiness_score", "injury_risk", "recovery_score", "cooper_m", "fatigue_score", "sleep_hours"] if c in view.columns]
-    st.dataframe(view[cols].sort_values(["status", "readiness_score"], ascending=[True, False]), use_container_width=True, hide_index=True)
+    if cols:
+        sort_cols = [c for c in ["status", "readiness_score"] if c in view.columns]
+        display_df = view[cols]
+        if sort_cols:
+            display_df = display_df.sort_values(sort_cols, ascending=[True, False][:len(sort_cols)])
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
 
 
 def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = None) -> Optional[str]:
