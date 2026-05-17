@@ -64,6 +64,7 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
 }
 #MainMenu, footer, header {visibility: hidden;}
 [data-testid="stToolbar"] {visibility: hidden; height: 0%; position: fixed;}
+[data-testid="InputInstructions"] {display:none !important;}
 [data-testid="stDecoration"], [data-testid="stStatusWidget"], [data-testid="stHeader"] {display: none;}
 
 h1, h2, h3, h4, h5, h6, p, label, span, div {font-family: "Inter", "Segoe UI", Arial, sans-serif;}
@@ -128,10 +129,18 @@ hr {border-color: rgba(34,75,40,.18) !important;}
 .login-form-panel {padding:24px; background:#ffffff;}
 .login-form-title {color:var(--green-800) !important; font-size:1rem; font-weight:950; letter-spacing:.06em; text-transform:uppercase; margin:0 0 8px 0;}
 .login-form-subtitle {color:var(--muted) !important; margin:0 0 16px 0; font-size:.84rem; font-weight:650;}
-.login-demo {margin-top:18px; background:#f5f7ed; color:#475240; border:1px solid var(--border); border-radius:14px; padding:14px 16px; font-size:.80rem;}
+.login-demo {max-width:980px; margin:18px auto 0 auto; background:#f5f7ed; color:#475240; border:1px solid var(--border); border-radius:14px; padding:14px 16px; font-size:.80rem;}
 .login-demo b {color:var(--green-800);} .login-demo code {background:#e7efdc; color:#14532d; padding:2px 6px; border-radius:7px;}
 .login-foot {text-align:center; color:#677160; font-size:.76rem; margin-top:12px;}
-[data-testid="stForm"] {border:none !important; padding:0 !important; box-shadow:none !important; background:transparent !important;}
+[data-testid="stForm"] {
+    max-width: 980px !important;
+    margin: 16px auto 0 auto !important;
+    background: #ffffff !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 20px !important;
+    padding: 18px !important;
+    box-shadow: var(--shadow) !important;
+}
 
 /* Header */
 .main-header {
@@ -148,34 +157,42 @@ hr {border-color: rgba(34,75,40,.18) !important;}
 .header-logout {display:inline-flex; align-items:center; justify-content:center; min-width:140px; padding:11px 16px; border-radius:14px; border:1px solid rgba(255,248,207,.30); color:#fff8cf !important; text-decoration:none !important; font-weight:900; background:rgba(0,0,0,.16);}
 .header-logout:hover {background:rgba(255,255,255,.13); color:#fff !important;}
 
-/* Navigation - nicer segmented buttons */
+/* Navigation - clean pill links, no native radio dots */
 .nav-card {
     padding: 8px;
     margin: 0 0 22px 0;
-    border-radius: 18px;
+    border-radius: 999px;
     background: rgba(255,255,255,.78);
     border: 1px solid var(--border);
     box-shadow: 0 10px 28px rgba(16,32,21,.07);
-    width: fit-content;
+    display:inline-flex;
+    gap:8px;
+    flex-wrap:wrap;
 }
-.stRadio > div[role="radiogroup"] {display:flex; gap:8px; flex-wrap:wrap;}
-.stRadio label {
-    padding: 10px 16px !important;
-    min-height: 42px !important;
-    border-radius: 999px !important;
-    border: 1px solid rgba(20,83,45,.18) !important;
-    background: #ffffff !important;
+.nav-pill {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding: 11px 18px;
+    min-height: 42px;
+    border-radius: 999px;
+    border: 1px solid rgba(20,83,45,.18);
+    background: #ffffff;
     color: var(--green-800) !important;
+    text-decoration:none !important;
     box-shadow: 0 5px 14px rgba(16,32,21,.05);
+    font-weight: 820;
 }
-.stRadio label:has(input:checked) {
-    background: linear-gradient(135deg, var(--green-800), var(--green-600)) !important;
+.nav-pill:hover {background:#f3f7ee; border-color:rgba(20,83,45,.30); color:var(--green-900)!important;}
+.nav-pill.active {
+    background: linear-gradient(135deg, var(--green-800), var(--green-600));
     color: #fff8cf !important;
-    border-color: var(--green-600) !important;
+    border-color: var(--green-600);
 }
-.stRadio label div {color:inherit !important;}
-.stRadio [data-baseweb="radio"] {background:transparent !important;}
-
+.nav-dot {width:9px; height:9px; border-radius:50%; background:rgba(20,83,45,.20); display:inline-block;}
+.nav-pill.active .nav-dot {background:#bbf7d0; box-shadow:0 0 0 4px rgba(187,247,208,.16);}
+.stRadio > div[role="radiogroup"] {display:none !important;}
 /* Section titles/cards */
 .section-title {
     color: var(--green-900) !important;
@@ -193,15 +210,17 @@ hr {border-color: rgba(34,75,40,.18) !important;}
     border: 1px solid var(--border);
     border-radius: 18px;
     padding: 16px 18px;
-    min-height: 118px;
+    height: 148px;
+    min-height: 148px;
     color: var(--ink);
+    display:flex; flex-direction:column; justify-content:space-between;
     box-shadow: var(--shadow);
     position: relative;
     overflow:hidden;
 }
 .metric-card:before {content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background: linear-gradient(180deg, var(--green-600), var(--yellow));}
 .metric-card small {color:var(--green-700); font-size:.72rem; font-weight:950; text-transform:uppercase; letter-spacing:.07em;}
-.metric-card h2 {font-size:2.0rem; margin: 13px 0 3px 0; font-weight:950; color:var(--green-900) !important;}
+.metric-card h2 {font-size:clamp(1.45rem, 2.1vw, 2.0rem); line-height:1.08; margin: 10px 0 3px 0; font-weight:950; color:var(--green-900) !important; overflow-wrap:break-word;}
 .metric-card p {margin:0; color:var(--muted); font-size:.78rem; font-weight:650;}
 .soft-card, .info-card {
     padding: 18px; border-radius: 18px; background:#ffffff;
@@ -700,6 +719,24 @@ def top_bar(profile: Dict[str, Any]) -> str:
     elif role == "treinador":
         page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino"]
 
+    slug = {
+        "Dashboard": "dashboard",
+        "Militar": "militar",
+        "Digital Twin": "digital-twin",
+        "Simular treino": "simular-treino",
+        "Admin": "admin",
+    }
+    reverse = {v: k for k, v in slug.items()}
+    try:
+        requested = st.query_params.get("page", None)
+        if isinstance(requested, list):
+            requested = requested[0] if requested else None
+    except Exception:
+        requested = None
+    page = reverse.get(str(requested), page_options[0])
+    if page not in page_options:
+        page = page_options[0]
+
     st.markdown(f"""
     <div class="main-header">
         <div class="header-left">
@@ -708,11 +745,14 @@ def top_bar(profile: Dict[str, Any]) -> str:
         </div>
         <a class="header-logout" href="?logout=1" target="_self">Terminar sessão</a>
     </div>
-    <div class="nav-card">
     """, unsafe_allow_html=True)
-    choice = st.radio("Navegação", page_options, horizontal=True, label_visibility="collapsed")
-    st.markdown("</div>", unsafe_allow_html=True)
-    return choice
+
+    links = []
+    for option in page_options:
+        active = " active" if option == page else ""
+        links.append(f'<a class="nav-pill{active}" href="?page={slug[option]}" target="_self"><span class="nav-dot"></span>{html.escape(option)}</a>')
+    st.markdown('<div class="nav-card">' + ''.join(links) + '</div>', unsafe_allow_html=True)
+    return page
 
 def commander_dashboard(profile: Dict[str, Any]) -> None:
     st.markdown('<div class="section-title">Dashboard do comandante</div>', unsafe_allow_html=True)
@@ -869,13 +909,13 @@ def _bar_html(label: str, value: Any, polarity: str = "good") -> str:
         cls = "fill-risk" if v >= 65 else "fill-warn" if v >= 40 else "fill-good"
     else:
         cls = "fill-good" if v >= 75 else "fill-warn" if v >= 55 else "fill-risk"
-    return f"""
-    <div class="band-row">
-        <div>{html.escape(label)}</div>
-        <div class="band-track"><div class="band-fill {cls}" style="width:{v:.0f}%"></div></div>
-        <strong>{n}</strong>
-    </div>
-    """
+    return (
+        '<div class="band-row">'
+        f'<div>{html.escape(label)}</div>'
+        f'<div class="band-track"><div class="band-fill {cls}" style="width:{v:.0f}%"></div></div>'
+        f'<strong>{n}</strong>'
+        '</div>'
+    )
 
 
 def render_commander_soldier_summary(soldier: Dict[str, Any], latest: Dict[str, Any], tlatest: Dict[str, Any], recs: pd.DataFrame) -> None:
@@ -893,28 +933,27 @@ def render_commander_soldier_summary(soldier: Dict[str, Any], latest: Dict[str, 
 
     left, right = st.columns([1.05, 1])
     with left:
-        st.markdown(f"""
-        <div class="info-card">
-            <h3>Resumo operacional autorizado</h3>
-            <div class="privacy-note">Visão de comandante: apresenta indicadores de prontidão e decisão operacional. Dados pessoais sensíveis são omitidos nesta vista.</div>
-            <div class="band-list">
-                {_bar_html('Prontidão', readiness, 'good')}
-                {_bar_html('Risco', risk, 'risk')}
-                {_bar_html('Recuperação', recovery, 'good')}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        bands_html = _bar_html('Prontidão', readiness, 'good') + _bar_html('Risco', risk, 'risk') + _bar_html('Recuperação', recovery, 'good')
+        summary_html = (
+            '<div class="info-card">'
+            '<h3>Resumo operacional autorizado</h3>'
+            '<div class="privacy-note">Visão de comandante: apresenta indicadores de prontidão e decisão operacional. Dados pessoais sensíveis são omitidos nesta vista.</div>'
+            '<div class="band-list">' + bands_html + '</div>'
+            '</div>'
+        )
+        st.markdown(summary_html, unsafe_allow_html=True)
     with right:
-        st.markdown(f"""
-        <div class="info-card">
-            <h3>Decisão para planeamento</h3>
-            <p><b>Disponibilidade:</b> {html.escape(availability)}</p>
-            <p><b>Nível de risco:</b> {html.escape(risk_band)}</p>
-            <p><b>Último Cooper registado:</b> {html.escape(str(tlatest.get('cooper_m', '—')))} m</p>
-            <div class="action-box"><b>Ação recomendada:</b><br><span>{html.escape(action)}</span></div>
-            <div class="action-box"><b>Recomendação mais recente:</b><br><span>{html.escape(last_rec)}</span></div>
-        </div>
-        """, unsafe_allow_html=True)
+        decision_html = (
+            '<div class="info-card">'
+            '<h3>Decisão para planeamento</h3>'
+            f'<p><b>Disponibilidade:</b> {html.escape(availability)}</p>'
+            f'<p><b>Nível de risco:</b> {html.escape(risk_band)}</p>'
+            f'<p><b>Último Cooper registado:</b> {html.escape(str(tlatest.get("cooper_m", "—")))} m</p>'
+            f'<div class="action-box"><b>Ação recomendada:</b><br><span>{html.escape(action)}</span></div>'
+            f'<div class="action-box"><b>Recomendação mais recente:</b><br><span>{html.escape(last_rec)}</span></div>'
+            '</div>'
+        )
+        st.markdown(decision_html, unsafe_allow_html=True)
 
 def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = None) -> Optional[str]:
     all_soldiers = get_soldiers()
