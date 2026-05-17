@@ -157,7 +157,8 @@ hr {border-color: rgba(34,75,40,.18) !important;}
 .header-logout {display:inline-flex; align-items:center; justify-content:center; min-width:140px; padding:11px 16px; border-radius:14px; border:1px solid rgba(255,248,207,.30); color:#fff8cf !important; text-decoration:none !important; font-weight:900; background:rgba(0,0,0,.16);}
 .header-logout:hover {background:rgba(255,255,255,.13); color:#fff !important;}
 
-/* Navigation - clean pill links, no native radio dots */
+/* Navigation - Streamlit radio styled as pills.
+   Important: this uses widgets, not href links, so the Supabase login session is not lost. */
 .nav-card {
     padding: 8px;
     margin: 0 0 22px 0;
@@ -165,34 +166,51 @@ hr {border-color: rgba(34,75,40,.18) !important;}
     background: rgba(255,255,255,.78);
     border: 1px solid var(--border);
     box-shadow: 0 10px 28px rgba(16,32,21,.07);
-    display:inline-flex;
-    gap:8px;
-    flex-wrap:wrap;
 }
-.nav-pill {
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding: 11px 18px;
-    min-height: 42px;
-    border-radius: 999px;
-    border: 1px solid rgba(20,83,45,.18);
-    background: #ffffff;
+[data-testid="stRadio"] > label {display:none !important;}
+[data-testid="stRadio"] div[role="radiogroup"] {
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:wrap !important;
+    gap:8px !important;
+    background: rgba(255,255,255,.78) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 999px !important;
+    padding: 8px !important;
+    width: fit-content !important;
+    box-shadow: 0 10px 28px rgba(16,32,21,.07) !important;
+}
+[data-testid="stRadio"] div[role="radiogroup"] label {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-height:42px !important;
+    padding: 0 18px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(20,83,45,.18) !important;
+    background: #ffffff !important;
     color: var(--green-800) !important;
-    text-decoration:none !important;
-    box-shadow: 0 5px 14px rgba(16,32,21,.05);
-    font-weight: 820;
+    box-shadow: 0 5px 14px rgba(16,32,21,.05) !important;
+    cursor:pointer !important;
+    font-weight:850 !important;
 }
-.nav-pill:hover {background:#f3f7ee; border-color:rgba(20,83,45,.30); color:var(--green-900)!important;}
-.nav-pill.active {
-    background: linear-gradient(135deg, var(--green-800), var(--green-600));
-    color: #fff8cf !important;
-    border-color: var(--green-600);
+[data-testid="stRadio"] div[role="radiogroup"] label:hover {
+    background:#f3f7ee !important;
+    border-color:rgba(20,83,45,.30) !important;
 }
-.nav-dot {width:9px; height:9px; border-radius:50%; background:rgba(20,83,45,.20); display:inline-block;}
-.nav-pill.active .nav-dot {background:#bbf7d0; box-shadow:0 0 0 4px rgba(187,247,208,.16);}
-.stRadio > div[role="radiogroup"] {display:none !important;}
+[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {
+    background: linear-gradient(135deg, var(--green-800), var(--green-600)) !important;
+    color:#fff8cf !important;
+    border-color: var(--green-600) !important;
+}
+[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) p {color:#fff8cf !important;}
+[data-testid="stRadio"] div[role="radiogroup"] label p {
+    color:inherit !important;
+    font-size:.92rem !important;
+    font-weight:850 !important;
+}
+[data-testid="stRadio"] div[role="radiogroup"] label input {display:none !important;}
+[data-testid="stRadio"] div[role="radiogroup"] label > div:first-child {display:none !important;}
 /* Section titles/cards */
 .section-title {
     color: var(--green-900) !important;
@@ -271,8 +289,8 @@ table.pretty-table {width:100%; border-collapse: collapse; font-size:.82rem;}
     .main-header {align-items:flex-start; flex-direction:column;}
     .header-left h1 {font-size:1.15rem;}
     .nav-card {width:100%;}
-    .stRadio > div[role="radiogroup"] {width:100%;}
-    .stRadio label {flex:1; justify-content:center;}
+    [data-testid="stRadio"] div[role="radiogroup"] {width:100% !important;}
+    [data-testid="stRadio"] div[role="radiogroup"] label {flex:1 !important;}
     .band-row {grid-template-columns: 115px 1fr 42px;}
 }
 </style>
@@ -719,24 +737,6 @@ def top_bar(profile: Dict[str, Any]) -> str:
     elif role == "treinador":
         page_options = ["Dashboard", "Militar", "Digital Twin", "Simular treino"]
 
-    slug = {
-        "Dashboard": "dashboard",
-        "Militar": "militar",
-        "Digital Twin": "digital-twin",
-        "Simular treino": "simular-treino",
-        "Admin": "admin",
-    }
-    reverse = {v: k for k, v in slug.items()}
-    try:
-        requested = st.query_params.get("page", None)
-        if isinstance(requested, list):
-            requested = requested[0] if requested else None
-    except Exception:
-        requested = None
-    page = reverse.get(str(requested), page_options[0])
-    if page not in page_options:
-        page = page_options[0]
-
     st.markdown(f"""
     <div class="main-header">
         <div class="header-left">
@@ -747,11 +747,23 @@ def top_bar(profile: Dict[str, Any]) -> str:
     </div>
     """, unsafe_allow_html=True)
 
-    links = []
-    for option in page_options:
-        active = " active" if option == page else ""
-        links.append(f'<a class="nav-pill{active}" href="?page={slug[option]}" target="_self"><span class="nav-dot"></span>{html.escape(option)}</a>')
-    st.markdown('<div class="nav-card">' + ''.join(links) + '</div>', unsafe_allow_html=True)
+    # Do not navigate with raw HTML links here. In Streamlit Cloud, href navigation can
+    # restart the browser session and drop st.session_state, which sends the user back
+    # to login. A Streamlit radio keeps navigation inside the active authenticated session.
+    current = st.session_state.get("page", page_options[0])
+    if current not in page_options:
+        current = page_options[0]
+        st.session_state["page"] = current
+
+    page = st.radio(
+        "Navegação",
+        page_options,
+        index=page_options.index(current),
+        horizontal=True,
+        label_visibility="collapsed",
+        key=f"nav_page_{role}",
+    )
+    st.session_state["page"] = page
     return page
 
 def commander_dashboard(profile: Dict[str, Any]) -> None:
