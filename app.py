@@ -293,6 +293,83 @@ table.pretty-table {width:100%; border-collapse: collapse; font-size:.80rem;}
 """
 st.markdown(CSS, unsafe_allow_html=True)
 
+
+# Extra classes copied from the original local prototype dashboard
+st.markdown(
+    """
+<style>
+.tac-shell {
+    border: 1px solid rgba(211,165,38,.42);
+    border-radius: 18px;
+    padding: 18px 20px 20px 20px;
+    background:
+      linear-gradient(180deg, rgba(8, 28, 14, 0.98), rgba(3, 14, 8, 0.98)),
+      radial-gradient(circle at 15% 20%, rgba(36, 94, 38, 0.20), transparent 35%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.18), 0 14px 34px rgba(0,0,0,.38);
+    margin-bottom: 15px;
+}
+.topbar-local {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; margin-bottom: 16px;
+}
+.title-wrap-local {display:flex; align-items:center; gap:14px;}
+.logo-box-local {
+    width: 56px; height: 56px; display:flex; align-items:center; justify-content:center;
+    border-radius: 12px; background: linear-gradient(180deg, rgba(20,48,25,.96), rgba(3,15,8,.96));
+    border: 1px solid rgba(211,165,38,.42); color: #f2bd28; font-size: 27px;
+    box-shadow: inset 0 0 18px rgba(242,189,40,.08);
+}
+.h-title-local {color:#f4ead0; font-size:28px; font-weight:900; line-height:1; letter-spacing:.4px; text-transform:uppercase;}
+.h-subtitle-local {color:#a9a47d; font-size:12px; font-weight:700; margin-top:6px;}
+.status-wrap-local {display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;}
+.status-pill-local {
+    border: 1px solid rgba(211,165,38,.35); background: rgba(7,25,12,.95);
+    border-radius: 9px; padding: 8px 12px; color:#e3d08a; font-size:12px;
+    font-weight:800; text-transform:uppercase;
+}
+.sync-dot-local {color:#66f060; margin-right:5px;}
+.filter-row-local {
+    border: 1px solid rgba(211,165,38,.30); border-radius: 12px;
+    background: rgba(5,18,9,.68); padding: 12px 14px 2px 14px; margin: 0 0 14px 0;
+}
+.filter-title-local {color:#e3d08a; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.30px; margin-bottom:6px;}
+.kpi-card-local {
+    background: linear-gradient(180deg, rgba(12,43,20,.96), rgba(4,18,9,.96));
+    border: 1px solid rgba(211,165,38,.42); border-radius: 12px; padding:14px 15px;
+    min-height:114px; box-shadow: inset 0 0 22px rgba(108,255,104,.035), 0 7px 20px rgba(0,0,0,.22);
+    overflow:hidden;
+}
+.kpi-label-local {font-size:11px; color:#e3d08a; font-weight:900; text-transform:uppercase; letter-spacing:.35px; margin-bottom:7px;}
+.kpi-number-local {font-size:38px; line-height:1; font-weight:900; margin:2px 0 6px 0;}
+.kpi-detail-local {font-size:12px; font-weight:800; color:#a9a47d;}
+.kpi-icon-local {font-size:28px; text-align:right; margin-top:4px;}
+.local-green {color:#64d95f !important;} .local-yellow {color:#f2c335 !important;} .local-orange {color:#ff8c22 !important;} .local-red {color:#ff3d2e !important;} .local-gold {color:#f2bd28 !important;}
+.section-card-local {
+    background: linear-gradient(180deg, rgba(9,34,17,.96), rgba(3,16,8,.96));
+    border: 1px solid rgba(211,165,38,.42); border-radius:12px; padding:13px 14px; margin-bottom:12px;
+    box-shadow: inset 0 0 20px rgba(242,189,40,.025), 0 7px 18px rgba(0,0,0,.20);
+}
+.section-title-local {color:#e3d08a; font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:.35px; margin-bottom:10px;}
+.alert-item-local, .rec-item-local {display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid rgba(211,165,38,.14);}
+.alert-item-local:last-child, .rec-item-local:last-child {border-bottom:none;}
+.rec-left-local {display:flex; align-items:center; gap:9px;}
+.rec-icon-local {width:26px; height:26px; border-radius:8px; border:1px solid rgba(211,165,38,.28); display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.18);}
+.rec-text-local {color:#f4ead0; font-weight:800; font-size:12px;}
+.rec-sub-local {color:#a9a47d; font-weight:700; font-size:11px; margin-top:2px;}
+.badge-local {border-radius:999px; padding:3px 8px; border:1px solid rgba(211,165,38,.26); font-size:10px; font-weight:900; text-transform:uppercase;}
+.commander-actions-local {display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:10px;}
+.action-card-local {display:flex; align-items:center; gap:14px; border:1px solid rgba(211,165,38,.42); border-radius:12px; background:linear-gradient(180deg, rgba(18,51,25,.78), rgba(6,20,10,.88)); padding:14px 15px; min-height:82px;}
+.action-icon-local {width:48px; height:48px; border-radius:99px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(211,165,38,.40); color:#f2bd28; font-size:24px;}
+.action-title-local {color:#f4ead0; font-weight:900; text-transform:uppercase; font-size:15px;}
+.action-sub-local {color:#a9a47d; font-size:12px; font-weight:700; margin-top:2px;}
+.decision-box-local {padding:14px 16px; border-radius:10px; background:rgba(88,92,6,.70); border:1px solid rgba(211,165,38,.32); color:#fff5bd; font-weight:800;}
+@media (max-width:900px){.topbar-local{align-items:flex-start; flex-direction:column;} .commander-actions-local{grid-template-columns:1fr;}}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
 ROLE_LABELS = {
     "admin": "Administrador",
     "comandante": "Comandante",
@@ -747,108 +824,277 @@ def top_bar(profile: Dict[str, Any]) -> str:
     st.markdown("</div>", unsafe_allow_html=True)
     return choice
 
+
 def commander_dashboard(profile: Dict[str, Any]) -> None:
-    st.markdown('<div class="section-title">Dashboard do comandante</div>', unsafe_allow_html=True)
+    """Commander page styled to match the original local prototype, but using live Supabase data."""
     df = assemble_snapshot()
     if df.empty:
         st.warning("Ainda não há dados acessíveis para este utilizador.")
         return
 
-    states = ["Todos"] + STATUS_ORDER
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        state = st.selectbox("Estado", states)
-    with c2:
-        min_ready = st.slider("Prontidão mínima", 0, 100, 0)
-    with c3:
-        show_risk = st.checkbox("Mostrar só risco elevado", value=False)
+    df = df.copy()
+    for col in ["readiness_score", "injury_risk", "recovery_score", "fatigue_score", "sleep_hours", "cooper_m"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # Operational state used in the old local dashboard.
+    def _estado(row: pd.Series) -> str:
+        ready = float(row.get("readiness_score") or 0)
+        risk = float(row.get("injury_risk") or 0)
+        recovery = float(row.get("recovery_score") or 50)
+        if ready >= 75 and risk < 35:
+            return "Apto"
+        if ready >= 60 and risk < 55:
+            return "Com limitações"
+        if risk >= 70 or ready < 45 or recovery < 45:
+            return "Indisponível"
+        return "Em risco"
+
+    def _disponibilidade(row: pd.Series) -> str:
+        est = row.get("estado_operacional", "Em risco")
+        if est == "Apto":
+            return "Pronto"
+        if est == "Com limitações":
+            return "Condicionado"
+        if est == "Em risco":
+            return "Em risco"
+        return "Não recomendado"
+
+    df["estado_operacional"] = df.apply(_estado, axis=1)
+    df["disponibilidade"] = df.apply(_disponibilidade, axis=1)
+
+    # Human readable platoon/section names.
+    platoons = df_from("platoons", order="name")
+    platoon_map = {}
+    if not platoons.empty and "id" in platoons.columns:
+        platoon_map = dict(zip(platoons["id"], platoons.get("name", platoons["id"])))
+    df["unidade"] = df.get("platoon_id", pd.Series([None] * len(df))).map(platoon_map).fillna("Companhia")
+
+    now = pd.Timestamp.now()
+    st.markdown(
+        f"""
+        <div class="tac-shell">
+          <div class="topbar-local">
+            <div class="title-wrap-local">
+              <div class="logo-box-local">⚔️</div>
+              <div>
+                <div class="h-title-local">Dashboard do Comandante</div>
+                <div class="h-subtitle-local">Monitorização da força com dados do digital twin</div>
+              </div>
+            </div>
+            <div class="status-wrap-local">
+              <div class="status-pill-local"><span class="sync-dot-local">●</span>Sincronizado</div>
+              <div class="status-pill-local">Última atualização&nbsp;&nbsp; {now.strftime('%H:%M:%S')}</div>
+              <div class="status-pill-local">{now.strftime('%d %b %Y').upper()}</div>
+            </div>
+          </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="filter-row-local"><div class="filter-title-local">Filtros disponíveis</div>', unsafe_allow_html=True)
+    f1, f2, f3 = st.columns([1, 2.2, 1])
+    unidades_all = sorted(df["unidade"].dropna().unique().tolist())
+    estados_all = ["Apto", "Com limitações", "Em risco", "Indisponível"]
+    with f1:
+        unidade = st.selectbox("Pelotão / Secção", ["Todas"] + unidades_all, key="cmd_filter_unidade_v6")
+    with f2:
+        estado_sel = st.multiselect("Estado operacional", estados_all, default=estados_all, key="cmd_filter_estado_v6")
+    with f3:
+        ordenar = st.selectbox("Ordenar por", ["Maior risco", "Menor prontidão", "Carga", "Nome"], key="cmd_filter_sort_v6")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     view = df.copy()
-    if state != "Todos" and "status" in view.columns:
-        view = view[view["status"] == state]
-    if "readiness_score" in view.columns:
-        view = view[view["readiness_score"].fillna(0) >= min_ready]
-    if show_risk and "injury_risk" in view.columns:
-        view = view[view["injury_risk"].fillna(0) >= 60]
+    if unidade != "Todas":
+        view = view[view["unidade"] == unidade]
+    view = view[view["estado_operacional"].isin(estado_sel)] if estado_sel else view.iloc[0:0]
 
-    total = len(df)
-    ready = int((df["status"] == "Pronto").sum()) if "status" in df else 0
-    attention = int((df["status"] == "Atenção").sum()) if "status" in df else 0
-    risk = int((df["status"] == "Risco").sum()) if "status" in df else 0
-    avg_ready = int(round(df["readiness_score"].dropna().mean())) if "readiness_score" in df and not df["readiness_score"].dropna().empty else "—"
+    if ordenar == "Maior risco":
+        view = view.sort_values(["injury_risk", "readiness_score"], ascending=[False, True])
+    elif ordenar == "Menor prontidão":
+        view = view.sort_values(["readiness_score", "injury_risk"], ascending=[True, False])
+    elif ordenar == "Carga" and "fatigue_score" in view.columns:
+        view = view.sort_values(["fatigue_score", "injury_risk"], ascending=[False, False])
+    else:
+        view = view.sort_values("full_name")
 
-    m1, m2, m3, m4, m5 = st.columns(5)
-    with m1: metric_card("Militares analisados", total, "dados da base Supabase")
-    with m2: metric_card("Prontos", ready, "prontidão ≥ 75")
-    with m3: metric_card("Atenção", attention, "55 ≤ prontidão < 75")
-    with m4: metric_card("Risco", risk, "prontidão < 55 ou risco alto")
-    with m5: metric_card("Prontidão média", f"{avg_ready}%" if avg_ready != "—" else "—", "média da unidade")
+    total = max(len(view), 1)
+    aptos = int((view["estado_operacional"] == "Apto").sum())
+    limit = int((view["estado_operacional"] == "Com limitações").sum())
+    risco = int((view["estado_operacional"] == "Em risco").sum())
+    indis = int((view["estado_operacional"] == "Indisponível").sum())
+    alertas_crit = int((view["injury_risk"].fillna(0) >= 70).sum())
+    alertas_at = int(((view["injury_risk"].fillna(0) >= 50) & (view["injury_risk"].fillna(0) < 70)).sum())
 
-    st.divider()
-    if view.empty:
-        st.warning("Nenhum militar corresponde aos filtros selecionados.")
-        return
+    def kpi_html(label: str, value: str, detail: str, color: str, icon: str) -> str:
+        return f"""
+        <div class="kpi-card-local">
+          <div class="kpi-label-local local-{color}">{html.escape(label)}</div>
+          <div class="kpi-number-local local-{color}">{html.escape(value)}</div>
+          <div class="kpi-detail-local">{html.escape(detail)}</div>
+          <div class="kpi-icon-local local-{color}">{icon}</div>
+        </div>
+        """
 
-    g1, g2 = st.columns([1, 1])
-    with g1:
-        chart_df = view.sort_values("readiness_score", ascending=True).copy()
-        fig = px.bar(
-            chart_df,
-            x="readiness_score",
-            y="full_name",
-            color="status",
-            category_orders={"status": STATUS_ORDER},
-            color_discrete_map={"Pronto": "#22c55e", "Atenção": "#f59e0b", "Risco": "#ef4444"},
-            labels={"readiness_score": "Prontidão", "full_name": "Militar", "status": "Estado"},
-            title="Prontidão por militar",
-        )
-        fig.update_layout(legend_title_text="Estado")
-        fig = apply_chart_style(fig, height=480)
-        st.plotly_chart(fig, use_container_width=True)
-    with g2:
-        fig = px.scatter(
-            view,
-            x="readiness_score",
-            y="injury_risk",
-            size="recovery_score",
-            color="status",
-            category_orders={"status": STATUS_ORDER},
-            hover_name="full_name",
-            color_discrete_map={"Pronto": "#22c55e", "Atenção": "#f59e0b", "Risco": "#ef4444"},
-            labels={"readiness_score": "Prontidão", "injury_risk": "Risco de lesão", "recovery_score": "Recuperação", "status": "Estado"},
-            title="Prontidão vs risco de lesão",
-        )
-        fig = apply_chart_style(fig, height=480)
-        st.plotly_chart(fig, use_container_width=True)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown(kpi_html("Estado de prontidão", f"{aptos/total*100:.0f}%", f"{aptos} aptos · {limit} com limitações", "green", "✓"), unsafe_allow_html=True)
+    with c2:
+        st.markdown(kpi_html("Disponibilidade para missão", f"{(aptos+limit)/total*100:.0f}%", f"{aptos+limit} prontos/condicionados", "yellow", "⊙"), unsafe_allow_html=True)
+    with c3:
+        st.markdown(kpi_html("Alertas ativos", str(alertas_crit + alertas_at), f"Críticos: {alertas_crit} · Atenção: {alertas_at}", "red" if alertas_crit else "yellow", "🔔"), unsafe_allow_html=True)
+    with c4:
+        st.markdown(kpi_html("Não recomendado", str(indis + risco), f"{risco} em risco · {indis} indisponíveis", "orange", "⚠"), unsafe_allow_html=True)
 
-    cols = [c for c in ["rank", "full_name", "status", "readiness_score", "injury_risk", "recovery_score", "cooper_m", "fatigue_score", "sleep_hours"] if c in view.columns]
-    if cols:
-        sort_cols = [c for c in ["status", "readiness_score"] if c in view.columns]
-        display_df = view[cols].copy()
-        if sort_cols:
-            display_df = display_df.sort_values(sort_cols, ascending=[True, False][:len(sort_cols)])
-        render_pretty_table(
-            display_df,
-            columns={
-                "rank": "Posto",
-                "full_name": "Militar",
-                "status": "Estado",
-                "readiness_score": "Prontidão",
-                "injury_risk": "Risco",
-                "recovery_score": "Recuperação",
-                "cooper_m": "Cooper",
-                "fatigue_score": "Fadiga",
-                "sleep_hours": "Sono",
+    st.write("")
+    col_table, col_charts, col_alerts = st.columns([1.55, 1.05, 1.1])
+
+    with col_table:
+        table = view[["rank", "full_name", "unidade", "readiness_score", "injury_risk", "fatigue_score", "disponibilidade"]].copy()
+        table = table.rename(columns={
+            "rank": "Posto",
+            "full_name": "Militar",
+            "unidade": "Unidade",
+            "readiness_score": "Prontidão",
+            "injury_risk": "Risco",
+            "fatigue_score": "Carga",
+            "disponibilidade": "Disponibilidade",
+        })
+        st.markdown('<div class="section-card-local"><div class="section-title-local">▣ Situação dos militares</div>', unsafe_allow_html=True)
+        st.dataframe(table, use_container_width=True, hide_index=True, height=390)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="section-card-local"><div class="section-title-local">◉ Estado geral por pelotão/secção</div>', unsafe_allow_html=True)
+        grouped = view.groupby(["unidade", "estado_operacional"]).size().reset_index(name="n")
+        if not grouped.empty:
+            fig = px.bar(
+                grouped,
+                x="unidade",
+                y="n",
+                color="estado_operacional",
+                barmode="stack",
+                color_discrete_map={"Apto": "#64d95f", "Com limitações": "#f2c335", "Em risco": "#ff8c22", "Indisponível": "#ff3d2e"},
+                labels={"unidade": "unidade", "n": "", "estado_operacional": "estado operacional"},
+            )
+            fig = apply_chart_style(fig, height=260)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.caption("Sem dados para o filtro atual.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col_charts:
+        st.markdown('<div class="section-card-local"><div class="section-title-local">📈 Evolução do rendimento físico</div>', unsafe_allow_html=True)
+        tests = df_from("physical_tests", order="test_date")
+        if not tests.empty:
+            tests = tests.copy()
+            tests["test_date"] = pd.to_datetime(tests["test_date"], errors="coerce")
+            trend = tests.groupby("test_date", as_index=False).agg(
+                cooper_m=("cooper_m", "mean"),
+                pushups=("pushups", "mean"),
+                pullups=("pullups", "mean"),
+            ).sort_values("test_date")
+            fig = go.Figure()
+            if "cooper_m" in trend:
+                fig.add_trace(go.Scatter(x=trend["test_date"], y=trend["cooper_m"], mode="lines+markers", name="Cooper médio", line=dict(color="#64d95f", width=3)))
+            if "pushups" in trend:
+                fig.add_trace(go.Scatter(x=trend["test_date"], y=trend["pushups"] * 45, mode="lines+markers", name="Flexões", line=dict(color="#f2c335", width=3)))
+            if "pullups" in trend:
+                fig.add_trace(go.Scatter(x=trend["test_date"], y=trend["pullups"] * 160, mode="lines+markers", name="Barras", line=dict(color="#ff8c22", width=3)))
+            fig = apply_chart_style(fig, height=260)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.caption("Sem histórico de testes físicos.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="section-card-local"><div class="section-title-local">⏱ Carga acumulada</div>', unsafe_allow_html=True)
+        carga_media = float(view["fatigue_score"].dropna().mean()) if "fatigue_score" in view and not view.empty else 0
+        figg = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=carga_media,
+            number={"suffix": "/100", "font": {"color": "#f4ead0", "size": 34}},
+            gauge={
+                "axis": {"range": [0, 100], "tickcolor": "#e8d9a8"},
+                "bar": {"color": "#f2bd28"},
+                "bgcolor": "rgba(0,0,0,0)",
+                "bordercolor": "rgba(211,165,38,.25)",
+                "steps": [
+                    {"range": [0, 40], "color": "rgba(100,217,95,.65)"},
+                    {"range": [40, 70], "color": "rgba(242,195,53,.65)"},
+                    {"range": [70, 100], "color": "rgba(255,61,46,.65)"},
+                ],
             },
-            title="Tabela operacional",
-            subtitle=f"{len(display_df)} militar(es) filtrados · dados da base Supabase",
-            bar_columns={
-                "readiness_score": "good",
-                "injury_risk": "risk",
-                "recovery_score": "good",
-                "fatigue_score": "risk",
-            },
-        )
+        ))
+        figg = apply_chart_style(figg, height=260)
+        st.plotly_chart(figg, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col_alerts:
+        st.markdown('<div class="section-card-local"><div class="section-title-local">⚠ Alertas de quebra de desempenho</div>', unsafe_allow_html=True)
+        alert_df = view[(view["injury_risk"].fillna(0) >= 50) | (view["readiness_score"].fillna(100) < 55)].sort_values("injury_risk", ascending=False)
+        if alert_df.empty:
+            st.markdown('<div class="rec-sub-local local-green">Sem alertas relevantes na força selecionada.</div>', unsafe_allow_html=True)
+        else:
+            for _, r in alert_df.head(6).iterrows():
+                lvl = "Crítico" if float(r.get("injury_risk") or 0) >= 70 else "Atenção"
+                col = "red" if lvl == "Crítico" else "yellow"
+                st.markdown(
+                    f"""
+                    <div class="alert-item-local">
+                      <div><div class="rec-text-local local-{col}">{html.escape(str(r.get('full_name', '')))}</div><div class="rec-sub-local">Risco {int(float(r.get('injury_risk') or 0))}% · Prontidão {int(float(r.get('readiness_score') or 0))}%</div></div>
+                      <div class="badge-local local-{col}">{lvl}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="section-card-local"><div class="section-title-local">▣ Recomendações práticas</div>', unsafe_allow_html=True)
+        rec_cmd = []
+        if indis > 0:
+            rec_cmd.append(("🩺", "Avaliar militar", f"{indis} não recomendados"))
+        if risco > 0:
+            rec_cmd.append(("⬇️", "Reduzir carga de treino", f"{risco} em risco"))
+        if limit > 0:
+            rec_cmd.append(("🛌", "Dar recuperação adicional", f"{limit} condicionados"))
+        if aptos > 0:
+            rec_cmd.append(("✅", "Selecionar militares aptos", f"{aptos} prontos"))
+        if not rec_cmd:
+            rec_cmd.append(("✅", "Manter plano atual", "força estável"))
+        for icon, title, sub in rec_cmd:
+            st.markdown(
+                f"""
+                <div class="rec-item-local">
+                  <div class="rec-left-local"><div class="rec-icon-local">{icon}</div><div><div class="rec-text-local">{html.escape(title)}</div><div class="rec-sub-local">{html.escape(sub)}</div></div></div>
+                  <div class="local-gold">›</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="section-card-local"><div class="section-title-local">🎯 Decisão recomendada agora</div>', unsafe_allow_html=True)
+        if indis > 0:
+            msg = "Há militares não recomendados: retirar de tarefas exigentes e avaliar condição."
+        elif risco > 0:
+            msg = "Existem militares em risco: reduzir carga e monitorizar nas próximas 24–48h."
+        else:
+            msg = "Força globalmente estável para manter plano de treino/missão."
+        st.markdown(f'<div class="decision-box-local">{html.escape(msg)}</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <h3 style="color:#f4ead0;margin-top:16px;">Ações rápidas do comandante</h3>
+        <div class="commander-actions-local">
+          <div class="action-card-local"><div class="action-icon-local">✓</div><div><div class="action-title-local">Quem está pronto?</div><div class="action-sub-local">Filtrar aptos para treino/missão</div></div></div>
+          <div class="action-card-local"><div class="action-icon-local">⚠</div><div><div class="action-title-local">Quem está em risco?</div><div class="action-sub-local">Ver militares que exigem adaptação</div></div></div>
+          <div class="action-card-local"><div class="action-icon-local">🎯</div><div><div class="action-title-local">Que decisão tomar?</div><div class="action-sub-local">Resumo operacional imediato</div></div></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = None) -> Optional[str]:
