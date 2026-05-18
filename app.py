@@ -448,7 +448,6 @@ def login_page() -> None:
                     </div>
                 </div>
             </div>
-            <div class="login-foot">Protótipo EITT · Streamlit Cloud + Supabase PostgreSQL/Auth · Dados fictícios</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -673,20 +672,22 @@ def render_pretty_table(
 
     head = "".join(f"<th>{html.escape(label)}</th>" for col, label in columns.items() if col in use_cols)
     subtitle_html = f'<div class="table-head-subtitle">{html.escape(subtitle)}</div>' if subtitle else ""
-    table_html = f"""
-    <div class="table-card">
-        <div class="table-head">
-            <div class="table-head-title">{html.escape(title)}</div>
-            {subtitle_html}
-        </div>
-        <div class="table-scroll">
-            <table class="pretty-table">
-                <thead><tr>{head}</tr></thead>
-                <tbody>{''.join(html_rows)}</tbody>
-            </table>
-        </div>
-    </div>
-    """
+    # Important: keep the HTML left-aligned. If this string is indented,
+    # Markdown may render it as a code block instead of real HTML.
+    table_html = (
+        f'<div class="table-card">'
+        f'<div class="table-head">'
+        f'<div class="table-head-title">{html.escape(title)}</div>'
+        f'{subtitle_html}'
+        f'</div>'
+        f'<div class="table-scroll">'
+        f'<table class="pretty-table">'
+        f'<thead><tr>{head}</tr></thead>'
+        f'<tbody>{"".join(html_rows)}</tbody>'
+        f'</table>'
+        f'</div>'
+        f'</div>'
+    )
     st.markdown(table_html, unsafe_allow_html=True)
 
 # -----------------------------
@@ -797,7 +798,7 @@ def commander_dashboard(profile: Dict[str, Any]) -> None:
     avg_ready = int(round(df["readiness_score"].dropna().mean())) if "readiness_score" in df and not df["readiness_score"].dropna().empty else "—"
 
     m1, m2, m3, m4, m5 = st.columns(5)
-    with m1: metric_card("Militares analisados", total, "dados da base Supabase")
+    with m1: metric_card("Militares analisados", total, "")
     with m2: metric_card("Prontos", ready, "prontidão ≥ 75")
     with m3: metric_card("Atenção", attention, "55 ≤ prontidão < 75")
     with m4: metric_card("Risco", risk, "prontidão < 55 ou risco alto")
@@ -1017,6 +1018,10 @@ def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = Non
             return None
         soldier_id = own["id"]
     else:
+        if st.session_state.get("page") != "Dashboard":
+            if st.button("← Voltar ao dashboard", key="back_dashboard_from_soldier", use_container_width=False):
+                st.session_state["page"] = "Dashboard"
+                st.rerun()
         all_soldiers = enrich_soldier_filters(all_soldiers)
         f1, f2, f3 = st.columns([1, 1, 2])
         with f1:
@@ -1247,6 +1252,15 @@ def group_training_inputs() -> Dict[str, Any]:
 
 def simulate_group_training(profile: Dict[str, Any]) -> None:
     st.markdown('<div class="section-title">Simulador de treino coletivo</div>', unsafe_allow_html=True)
+    if st.button("← Voltar ao dashboard", key="back_dashboard_from_simulator", use_container_width=False):
+        st.session_state["page"] = "Dashboard"
+        st.rerun()
+    st.markdown(
+        '<div class="action-box"><b>Para que serve guardar a simulação?</b><br>'
+        '<span>Guarda uma previsão histórica do treino para cada militar do grupo: prontidão prevista, risco previsto e decisão recomendada. '
+        'Não altera a prontidão real. Serve para comparar depois o planeado com o resultado observado após o treino.</span></div>',
+        unsafe_allow_html=True,
+    )
     snapshot = assemble_snapshot()
     if snapshot.empty:
         st.warning("Não há militares acessíveis para simular.")
@@ -1349,8 +1363,7 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
         delta_columns=["Impacto"],
     )
 
-    st.info("Guardar simulação cria um registo histórico na base de dados para cada militar do grupo, com a prontidão prevista, risco previsto e decisão recomendada. Não altera a prontidão real; serve para comparar depois com o resultado do treino executado.")
-    if st.button("Guardar simulação coletiva", use_container_width=True):
+    if st.button("Guardar previsão coletiva na base de dados", use_container_width=True):
         try:
             payloads = []
             for _, row in sim.iterrows():
@@ -1366,7 +1379,7 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
                     "recommendation": str(row["Decisão"]),
                 })
             sb_insert_many("training_simulations", payloads)
-            st.success("Simulação coletiva guardada na base de dados, associada a cada militar do grupo.")
+            st.success("Previsão coletiva guardada. A prontidão real não foi alterada.")
         except Exception as exc:
             st.error("Não foi possível guardar a simulação coletiva.")
             st.caption(str(exc))
