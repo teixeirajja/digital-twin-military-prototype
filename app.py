@@ -1018,10 +1018,6 @@ def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = Non
             return None
         soldier_id = own["id"]
     else:
-        if st.session_state.get("page") != "Dashboard":
-            if st.button("← Voltar ao dashboard", key="back_dashboard_from_soldier", use_container_width=False):
-                st.session_state["page"] = "Dashboard"
-                st.rerun()
         all_soldiers = enrich_soldier_filters(all_soldiers)
         f1, f2, f3 = st.columns([1, 1, 2])
         with f1:
@@ -1127,7 +1123,6 @@ def twin_page(profile: Dict[str, Any]) -> None:
 
 def build_group_selection(snapshot: pd.DataFrame) -> Tuple[str, pd.DataFrame]:
     """Selects an operational group for command-level simulation."""
-    st.caption("Simulação coletiva: aplica o treino a um escalão operacional e calcula o impacto previsto em cada militar.")
     c1, c2, c3 = st.columns(3)
     with c1:
         echelon = st.selectbox("Escalão", ["Companhia", "Pelotão", "Secção"])
@@ -1252,15 +1247,6 @@ def group_training_inputs() -> Dict[str, Any]:
 
 def simulate_group_training(profile: Dict[str, Any]) -> None:
     st.markdown('<div class="section-title">Simulador de treino coletivo</div>', unsafe_allow_html=True)
-    if st.button("← Voltar ao dashboard", key="back_dashboard_from_simulator", use_container_width=False):
-        st.session_state["page"] = "Dashboard"
-        st.rerun()
-    st.markdown(
-        '<div class="action-box"><b>Para que serve guardar a simulação?</b><br>'
-        '<span>Guarda uma previsão histórica do treino para cada militar do grupo: prontidão prevista, risco previsto e decisão recomendada. '
-        'Não altera a prontidão real. Serve para comparar depois o planeado com o resultado observado após o treino.</span></div>',
-        unsafe_allow_html=True,
-    )
     snapshot = assemble_snapshot()
     if snapshot.empty:
         st.warning("Não há militares acessíveis para simular.")
@@ -1363,7 +1349,7 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
         delta_columns=["Impacto"],
     )
 
-    if st.button("Guardar previsão coletiva na base de dados", use_container_width=True):
+    if st.button("Guardar simulação coletiva", use_container_width=True):
         try:
             payloads = []
             for _, row in sim.iterrows():
@@ -1379,7 +1365,7 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
                     "recommendation": str(row["Decisão"]),
                 })
             sb_insert_many("training_simulations", payloads)
-            st.success("Previsão coletiva guardada. A prontidão real não foi alterada.")
+            st.success("Simulação coletiva guardada com sucesso.")
         except Exception as exc:
             st.error("Não foi possível guardar a simulação coletiva.")
             st.caption(str(exc))
