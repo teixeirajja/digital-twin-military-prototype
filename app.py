@@ -250,7 +250,7 @@ hr {border-color: rgba(34,75,40,.18) !important;}
 .band-list {display:grid; gap:10px; margin-top:10px;}
 .band-row {display:grid; grid-template-columns: 150px 1fr 48px; gap:12px; align-items:center; color:#263427; font-weight:700; font-size:.86rem;}
 .band-track {height:10px; border-radius:999px; background:#e4eadc; overflow:hidden; border:1px solid rgba(20,83,45,.12);}
-.band-fill {height:100%; border-radius:999px;}
+.band-fill {height:100%; border-radius:999px; display:block;}
 .action-box {background:linear-gradient(135deg,#ffffff,#f5f8ee); border:1px solid var(--border); border-radius:16px; padding:14px 16px; margin-top:10px;}
 .action-box b {color:var(--green-900);} .action-box span {color:var(--muted);}
 .footer-note {color:#697463;font-size:0.78rem;margin-top:16px;}
@@ -275,7 +275,7 @@ table.pretty-table {width:100%; border-collapse: collapse; font-size:.82rem;}
 .value-wrap {display:flex; align-items:center; gap:8px; min-width:135px;}
 .value-number {font-weight:900; min-width:36px; text-align:right; font-variant-numeric:tabular-nums; color:#102015;}
 .mini-track {height:8px; flex:1; min-width:70px; border-radius:999px; background:#e3eadc; overflow:hidden; border:1px solid rgba(20,83,45,.10);}
-.mini-fill {height:100%; border-radius:999px;} .fill-good {background:#22c55e;} .fill-warn {background:#f59e0b;} .fill-risk {background:#ef4444;}
+.mini-fill {height:100%; border-radius:999px; display:block;} .fill-good {background:#22c55e;} .fill-warn {background:#f59e0b;} .fill-risk {background:#ef4444;}
 .status-pill, .decision-pill {display:inline-flex; align-items:center; justify-content:center; padding:5px 10px; border-radius:999px; font-weight:900; font-size:.70rem; white-space:nowrap;}
 .pill-pronto {background:#dcfce7; color:#166534; border:1px solid #86efac;} .pill-atencao {background:#fef3c7; color:#92400e; border:1px solid #fcd34d;} .pill-risco {background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;}
 .pill-executa {background:#dcfce7; color:#166534; border:1px solid #86efac;} .pill-monitorizar {background:#fef3c7; color:#92400e; border:1px solid #fcd34d;} .pill-retirar {background:#fee2e2; color:#991b1b; border:1px solid #fca5a5;}
@@ -860,7 +860,7 @@ def commander_dashboard(profile: Dict[str, Any]) -> None:
                 "sleep_hours": "Sono",
             },
             title="Tabela operacional",
-            subtitle=f"{len(display_df)} militar(es) filtrados · dados da base Supabase",
+            subtitle="",
             bar_columns={
                 "readiness_score": "good",
                 "injury_risk": "risk",
@@ -930,14 +930,28 @@ def _bar_html(label: str, value: Any, polarity: str = "good") -> str:
     )
 
 
-def render_commander_soldier_summary(soldier: Dict[str, Any], latest: Dict[str, Any], tlatest: Dict[str, Any], recs: pd.DataFrame) -> None:
+def render_commander_soldier_summary(soldier: Dict[str, Any], latest: Dict[str, Any], dlatest: Dict[str, Any], tlatest: Dict[str, Any], recs: pd.DataFrame) -> None:
     status = str(latest.get("status", "Atenção"))
     readiness = latest.get("readiness_score", "—")
     risk = latest.get("injury_risk", "—")
     recovery = latest.get("recovery_score", "—")
+    fatigue = dlatest.get("fatigue_score", "—")
+    sleep = dlatest.get("sleep_hours", "—")
+    cooper = tlatest.get("cooper_m", "—")
+
     availability = _availability_text(status, risk, readiness)
     risk_band = _risk_band(risk)
     action = _commander_action(status, risk, readiness, recovery)
+
+    try:
+        fatigue_text = f"{int(round(float(fatigue)))}/10"
+    except Exception:
+        fatigue_text = "—"
+    try:
+        sleep_text = f"{float(sleep):.1f} h"
+    except Exception:
+        sleep_text = "—"
+
     last_rec = "Sem recomendações críticas."
     if not recs.empty:
         r = recs.iloc[0]
@@ -949,8 +963,15 @@ def render_commander_soldier_summary(soldier: Dict[str, Any], latest: Dict[str, 
         summary_html = (
             '<div class="info-card">'
             '<h3>Resumo operacional autorizado</h3>'
-            '<div class="privacy-note">Visão de comandante: apresenta indicadores de prontidão e decisão operacional. Dados pessoais sensíveis são omitidos nesta vista.</div>'
             '<div class="band-list">' + bands_html + '</div>'
+            '<div class="action-box" style="margin-top:14px;">'
+            f'<b>Estado atual:</b> <span>{html.escape(status)}</span><br>'
+            f'<b>Disponibilidade:</b> <span>{html.escape(availability)}</span><br>'
+            f'<b>Risco operacional:</b> <span>{html.escape(risk_band)}</span><br>'
+            f'<b>Último Cooper:</b> <span>{html.escape(str(cooper))} m</span><br>'
+            f'<b>Fadiga reportada:</b> <span>{html.escape(fatigue_text)}</span> · '
+            f'<b>Sono:</b> <span>{html.escape(sleep_text)}</span>'
+            '</div>'
             '</div>'
         )
         st.markdown(summary_html, unsafe_allow_html=True)
@@ -958,14 +979,29 @@ def render_commander_soldier_summary(soldier: Dict[str, Any], latest: Dict[str, 
         decision_html = (
             '<div class="info-card">'
             '<h3>Decisão para planeamento</h3>'
-            f'<p><b>Disponibilidade:</b> {html.escape(availability)}</p>'
-            f'<p><b>Nível de risco:</b> {html.escape(risk_band)}</p>'
-            f'<p><b>Último Cooper registado:</b> {html.escape(str(tlatest.get("cooper_m", "—")))} m</p>'
             f'<div class="action-box"><b>Ação recomendada:</b><br><span>{html.escape(action)}</span></div>'
             f'<div class="action-box"><b>Recomendação mais recente:</b><br><span>{html.escape(last_rec)}</span></div>'
+            '<div class="action-box"><b>Regra de utilização:</b><br><span>Esta vista apoia decisão de treino e não substitui avaliação médica/profissional.</span></div>'
             '</div>'
         )
         st.markdown(decision_html, unsafe_allow_html=True)
+
+
+def enrich_soldier_filters(soldiers: pd.DataFrame) -> pd.DataFrame:
+    """Adds platoon name and a prototype section label for command filtering."""
+    df = soldiers.copy()
+    platoons = df_from("platoons", order="name")
+    platoon_map = {}
+    if not platoons.empty and "id" in platoons.columns:
+        platoon_map = {row["id"]: row["name"] for _, row in platoons.iterrows()}
+    df["platoon_name"] = df.get("platoon_id", pd.Series(index=df.index, dtype=object)).map(platoon_map).fillna("Sem pelotão")
+    df["section_label"] = "Sem secção"
+    for _, idxs in df.sort_values(["platoon_name", "rank", "full_name"]).groupby("platoon_name", dropna=False).groups.items():
+        ordered = list(idxs)
+        midpoint = max(1, math.ceil(len(ordered) / 2))
+        df.loc[ordered[:midpoint], "section_label"] = "1.ª Secção"
+        df.loc[ordered[midpoint:], "section_label"] = "2.ª Secção"
+    return df
 
 def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = None) -> Optional[str]:
     all_soldiers = get_soldiers()
@@ -981,11 +1017,28 @@ def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = Non
             return None
         soldier_id = own["id"]
     else:
-        name_map = {f"{row.get('rank','')} {row['full_name']}": row["id"] for _, row in all_soldiers.iterrows()}
+        all_soldiers = enrich_soldier_filters(all_soldiers)
+        f1, f2, f3 = st.columns([1, 1, 2])
+        with f1:
+            platoon_options = ["Todos"] + sorted([p for p in all_soldiers["platoon_name"].dropna().unique().tolist() if p != "Sem pelotão"])
+            platoon_filter = st.selectbox("Pelotão", platoon_options)
+        filtered_soldiers = all_soldiers.copy()
+        if platoon_filter != "Todos":
+            filtered_soldiers = filtered_soldiers[filtered_soldiers["platoon_name"] == platoon_filter].copy()
+        with f2:
+            section_options = ["Todas"] + sorted(filtered_soldiers["section_label"].dropna().unique().tolist())
+            section_filter = st.selectbox("Secção", section_options)
+        if section_filter != "Todas":
+            filtered_soldiers = filtered_soldiers[filtered_soldiers["section_label"] == section_filter].copy()
+        if filtered_soldiers.empty:
+            st.warning("Não há militares para os filtros selecionados.")
+            return None
+        name_map = {f"{row.get('rank','')} {row['full_name']}": row["id"] for _, row in filtered_soldiers.sort_values(["rank", "full_name"]).iterrows()}
         default_index = 0
         if forced_soldier_id and forced_soldier_id in name_map.values():
             default_index = list(name_map.values()).index(forced_soldier_id)
-        chosen = st.selectbox("Selecionar militar", list(name_map.keys()), index=default_index)
+        with f3:
+            chosen = st.selectbox("Selecionar militar", list(name_map.keys()), index=default_index)
         soldier_id = name_map[chosen]
 
     soldier = all_soldiers[all_soldiers["id"] == soldier_id].iloc[0].to_dict()
@@ -1007,7 +1060,7 @@ def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = Non
         with c3: metric_card("Disponibilidade", _availability_text(str(latest.get('status', 'Atenção')), latest.get('injury_risk'), latest.get('readiness_score')), "para planeamento")
         with c4: metric_card("Cooper", f"{tlatest.get('cooper_m', '—')} m", "último teste")
         st.divider()
-        render_commander_soldier_summary(soldier, latest, tlatest, recs)
+        render_commander_soldier_summary(soldier, latest, dlatest, tlatest, recs)
         return soldier_id
 
     c1, c2, c3, c4 = st.columns(4)
@@ -1296,6 +1349,7 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
         delta_columns=["Impacto"],
     )
 
+    st.info("Guardar simulação cria um registo histórico na base de dados para cada militar do grupo, com a prontidão prevista, risco previsto e decisão recomendada. Não altera a prontidão real; serve para comparar depois com o resultado do treino executado.")
     if st.button("Guardar simulação coletiva", use_container_width=True):
         try:
             payloads = []
@@ -1427,7 +1481,6 @@ def main() -> None:
     elif page == "Admin":
         admin_page(profile)
 
-    st.markdown('<p class="footer-note">Protótipo EITT · Dados fictícios · Streamlit + Supabase PostgreSQL/Auth</p>', unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
