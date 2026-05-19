@@ -67,10 +67,11 @@ hr {border-color: rgba(20,83,45,.13) !important;}
 .stSlider label, .stSelectbox label, .stTextInput label, .stCheckbox label, .stRadio label {font-weight: 800 !important; color: #243623 !important; font-size: .84rem !important;}
 .stButton > button, .stFormSubmitButton > button {
   border-radius: 14px !important; border: 1px solid rgba(20,83,45,.25) !important; background: #fff !important;
-  color: var(--g700) !important; font-weight: 900 !important; min-height: 42px; box-shadow: 0 8px 22px rgba(16,32,21,.07) !important;
+  color: var(--g700) !important; font-weight: 950 !important; min-height: 58px; padding: 0 22px !important; font-size: 1.02rem !important; box-shadow: 0 8px 22px rgba(16,32,21,.07) !important;
 }
 .stButton > button:hover, .stFormSubmitButton > button:hover {background: var(--g700) !important; color: #fff !important;}
 [data-testid="stBaseButton-primary"] {background:linear-gradient(135deg,var(--g800),var(--g600)) !important; color:#fff8cf !important; border-color:var(--g700) !important;}
+[data-testid="stBaseButton-primary"] p, [data-testid="stBaseButton-primary"] span {color:#fff8cf !important;}
 [data-testid="stBaseButton-secondary"] {background:#fff !important; color:var(--g800) !important;}
 
 /* Login */
@@ -1025,76 +1026,91 @@ def twin_svg(loads: Dict[str, int], sex: str) -> str:
     '''
 
 def twin_zone_overlays(loads: Dict[str, int], sex: str, predicted: bool = False) -> str:
-    """Create HTML overlay zones over the anatomical base image.
+    """SVG overlays aligned to the embedded 980x1224 anatomical base images.
 
-    The base image is realistic; these semi-transparent zones make the colour
-    dynamic without returning to the old inflatable-looking SVG.
+    This avoids the old crop/percentage mismatch: the image and highlights share
+    the same SVG coordinate system, so each colour stays on the intended group.
     """
     female = str(sex).upper().startswith("F")
 
-    def zone(key: str, left: float, top: float, width: float, height: float,
-             radius: str = "50%", clip: str = "", rotate: float = 0, opacity: float = .56) -> str:
-        value = n(loads.get(key, 0))
-        color = color_for_load(value)
-        style = (
-            f"left:{left}%;top:{top}%;width:{width}%;height:{height}%;"
-            f"background:{color};border-radius:{radius};opacity:{opacity};"
-            f"transform:rotate({rotate}deg);"
-        )
-        if clip:
-            style += f"clip-path:{clip};"
-        return f'<div class="muscle-zone" title="{html.escape(MUSCLE_LABELS.get(key, key))}: {value}%" style="{style}"></div>'
+    def val(key: str) -> int:
+        return n(loads.get(key, 0))
 
-    zones = []
+    def fill(key: str) -> str:
+        return color_for_load(val(key))
+
+    def attrs(key: str, opacity: float = 0.54) -> str:
+        label = html.escape(MUSCLE_LABELS.get(key, key))
+        return f'fill="{fill(key)}" fill-opacity="{opacity}" stroke="rgba(255,248,207,.28)" stroke-width="1.2"><title>{label}: {val(key)}%</title>'
+
+    def ellipse(key: str, cx: float, cy: float, rx: float, ry: float, rotate: float = 0, opacity: float = 0.54) -> str:
+        tr = f' transform="rotate({rotate} {cx} {cy})"' if rotate else ""
+        return f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}"{tr} {attrs(key, opacity)}</ellipse>'
+
+    def poly(key: str, pts: str, opacity: float = 0.54) -> str:
+        return f'<polygon points="{pts}" {attrs(key, opacity)}</polygon>'
+
+    def path(key: str, d: str, opacity: float = 0.54) -> str:
+        return f'<path d="{d}" {attrs(key, opacity)}</path>'
+
+    zones: List[str] = []
     if female:
+        # FRONT — left figure
         zones += [
-            zone("shoulders", 17.2, 23.4, 7.8, 8.6, "52%", rotate=-16),
-            zone("shoulders", 34.9, 23.4, 7.8, 8.6, "52%", rotate=16),
-            zone("arms", 14.0, 32.0, 5.0, 18.0, "45%", rotate=6),
-            zone("arms", 40.7, 32.0, 5.0, 18.0, "45%", rotate=-6),
-            zone("chest", 22.3, 25.0, 15.4, 8.6, "46%"),
-            zone("core", 24.5, 34.2, 11.0, 14.8, "24%", clip="polygon(18% 0,82% 0,100% 100%,0 100%)"),
-            zone("quads", 22.5, 53.0, 6.7, 18.5, "36%", rotate=2, opacity=.60),
-            zone("quads", 31.0, 53.0, 6.7, 18.5, "36%", rotate=-2, opacity=.60),
-            zone("calves", 20.8, 73.0, 6.4, 16.5, "36%", rotate=-3, opacity=.52),
-            zone("calves", 33.0, 73.0, 6.4, 16.5, "36%", rotate=3, opacity=.52),
-            zone("shoulders", 58.3, 24.0, 8.0, 8.8, "52%", rotate=-15),
-            zone("shoulders", 76.0, 24.0, 8.0, 8.8, "52%", rotate=15),
-            zone("arms", 55.2, 32.0, 5.0, 18.3, "45%", rotate=6),
-            zone("arms", 82.0, 32.0, 5.0, 18.3, "45%", rotate=-6),
-            zone("back", 63.0, 25.8, 18.0, 19.0, "22%", clip="polygon(50% 0,100% 12%,82% 100%,18% 100%,0 12%)", opacity=.57),
-            zone("glutes", 63.0, 49.0, 8.6, 10.5, "48%"),
-            zone("glutes", 72.2, 49.0, 8.6, 10.5, "48%"),
-            zone("hamstrings", 62.3, 61.8, 6.7, 16.8, "34%", rotate=4, opacity=.58),
-            zone("hamstrings", 75.0, 61.8, 6.7, 16.8, "34%", rotate=-4, opacity=.58),
-            zone("calves", 61.2, 79.0, 6.1, 13.0, "38%", rotate=-3, opacity=.50),
-            zone("calves", 77.0, 79.0, 6.1, 13.0, "38%", rotate=3, opacity=.50),
+            ellipse("shoulders", 184, 290, 43, 66, -14, .50),
+            ellipse("shoulders", 389, 290, 43, 66, 14, .50),
+            ellipse("arms", 154, 445, 30, 116, 5, .49),
+            ellipse("arms", 423, 445, 30, 116, -5, .49),
+            ellipse("chest", 247, 330, 58, 36, -6, .44),
+            ellipse("chest", 326, 330, 58, 36, 6, .44),
+            poly("core", "238,392 336,392 358,560 218,560", .48),
+            ellipse("quads", 232, 704, 44, 132, 5, .56),
+            ellipse("quads", 342, 704, 44, 132, -5, .56),
+            ellipse("calves", 215, 932, 31, 132, -3, .50),
+            ellipse("calves", 360, 932, 31, 132, 3, .50),
+            # BACK — right figure
+            ellipse("shoulders", 580, 282, 43, 66, -16, .46),
+            ellipse("shoulders", 790, 282, 43, 66, 16, .46),
+            ellipse("arms", 540, 448, 30, 116, 6, .48),
+            ellipse("arms", 834, 448, 30, 116, -6, .48),
+            path("back", "M616 290 C652 245,725 245,760 290 L760 435 C730 463,647 463,616 435 Z", .46),
+            ellipse("glutes", 638, 590, 60, 72, -8, .50),
+            ellipse("glutes", 738, 590, 60, 72, 8, .50),
+            ellipse("hamstrings", 630, 780, 40, 145, 4, .55),
+            ellipse("hamstrings", 752, 780, 40, 145, -4, .55),
+            ellipse("calves", 610, 956, 31, 120, -4, .48),
+            ellipse("calves", 775, 956, 31, 120, 4, .48),
         ]
     else:
+        # FRONT — left figure
         zones += [
-            zone("shoulders", 17.8, 22.8, 8.2, 9.0, "52%", rotate=-15),
-            zone("shoulders", 35.4, 22.8, 8.2, 9.0, "52%", rotate=15),
-            zone("arms", 13.9, 31.4, 5.2, 19.5, "45%", rotate=5),
-            zone("arms", 41.7, 31.4, 5.2, 19.5, "45%", rotate=-5),
-            zone("chest", 22.6, 24.2, 16.0, 10.4, "45%"),
-            zone("core", 25.5, 34.7, 10.7, 16.0, "20%", clip="polygon(15% 0,85% 0,100% 100%,0 100%)"),
-            zone("quads", 22.7, 54.5, 7.0, 18.6, "38%", rotate=2, opacity=.60),
-            zone("quads", 31.4, 54.5, 7.0, 18.6, "38%", rotate=-2, opacity=.60),
-            zone("calves", 20.8, 75.5, 6.8, 16.6, "38%", rotate=-3, opacity=.50),
-            zone("calves", 34.0, 75.5, 6.8, 16.6, "38%", rotate=3, opacity=.50),
-            zone("shoulders", 58.8, 23.0, 8.3, 9.0, "52%", rotate=-16),
-            zone("shoulders", 76.6, 23.0, 8.3, 9.0, "52%", rotate=16),
-            zone("arms", 55.1, 31.4, 5.5, 19.0, "45%", rotate=6),
-            zone("arms", 84.0, 31.4, 5.5, 19.0, "45%", rotate=-6),
-            zone("back", 62.0, 24.0, 21.2, 22.0, "20%", clip="polygon(50% 0,100% 10%,80% 100%,20% 100%,0 10%)", opacity=.58),
-            zone("glutes", 63.0, 48.0, 9.4, 11.8, "48%"),
-            zone("glutes", 73.0, 48.0, 9.4, 11.8, "48%"),
-            zone("hamstrings", 62.3, 61.5, 7.2, 17.8, "35%", rotate=4, opacity=.58),
-            zone("hamstrings", 76.1, 61.5, 7.2, 17.8, "35%", rotate=-4, opacity=.58),
-            zone("calves", 61.0, 80.0, 6.8, 14.0, "38%", rotate=-3, opacity=.50),
-            zone("calves", 78.5, 80.0, 6.8, 14.0, "38%", rotate=3, opacity=.50),
+            ellipse("shoulders", 176, 298, 47, 70, -14, .50),
+            ellipse("shoulders", 405, 298, 47, 70, 14, .50),
+            ellipse("arms", 145, 458, 34, 126, 5, .48),
+            ellipse("arms", 435, 458, 34, 126, -5, .48),
+            ellipse("chest", 248, 342, 64, 42, -6, .43),
+            ellipse("chest", 331, 342, 64, 42, 6, .43),
+            poly("core", "244,392 342,392 370,610 216,610", .48),
+            ellipse("quads", 234, 735, 47, 142, 5, .57),
+            ellipse("quads", 348, 735, 47, 142, -5, .57),
+            ellipse("calves", 214, 968, 34, 132, -4, .50),
+            ellipse("calves", 372, 968, 34, 132, 4, .50),
+            # BACK — right figure
+            ellipse("shoulders", 582, 294, 48, 70, -16, .47),
+            ellipse("shoulders", 805, 294, 48, 70, 16, .47),
+            ellipse("arms", 538, 462, 34, 128, 6, .47),
+            ellipse("arms", 852, 462, 34, 128, -6, .47),
+            path("back", "M605 288 C652 238,735 238,784 288 L774 450 C736 494,654 494,616 450 Z", .47),
+            ellipse("glutes", 642, 615, 62, 76, -8, .51),
+            ellipse("glutes", 748, 615, 62, 76, 8, .51),
+            ellipse("hamstrings", 628, 792, 42, 152, 4, .56),
+            ellipse("hamstrings", 768, 792, 42, 152, -4, .56),
+            ellipse("calves", 608, 988, 35, 124, -4, .48),
+            ellipse("calves", 794, 988, 35, 124, 4, .48),
         ]
     return "\n".join(zones)
+
+
 
 
 def realistic_twin_html(soldier: Dict[str, Any], loads: Dict[str, int], title_extra: str = "") -> str:
@@ -1113,10 +1129,10 @@ def realistic_twin_html(soldier: Dict[str, Any], loads: Dict[str, int], title_ex
       .real-twin-head h3 {{margin:0; font-size:24px; letter-spacing:.18em; text-transform:uppercase; font-weight:950;}}
       .real-twin-head p {{margin:6px 0 0; color:#c4d5b5; font-weight:800; font-size:13px;}}
       .twin-pill {{border:1px solid rgba(255,248,207,.22); border-radius:999px; padding:9px 12px; color:#fff8cf; font-size:12px; font-weight:950; white-space:nowrap;}}
-      .img-stage {{position:relative; width:100%; max-width:980px; margin:0 auto; aspect-ratio: 980 / 1224; border-radius:18px; overflow:hidden; background:#020b06;}}
-      .img-stage::before {{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 25%,rgba(255,248,207,.10),transparent 38%); z-index:1; pointer-events:none;}}
-      .img-stage img {{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:contrast(1.04) brightness(.95); z-index:0;}}
-      .muscle-zone {{position:absolute; z-index:2; mix-blend-mode:screen; filter: saturate(1.35) blur(.15px); box-shadow:0 0 22px rgba(255,248,207,.10) inset, 0 0 18px currentColor; pointer-events:auto;}}
+      .img-stage {{position:relative; width:min(100%, 700px); margin:0 auto; aspect-ratio: 980 / 1224; border-radius:18px; overflow:hidden; background:#020b06;}}
+      .img-stage::before {{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 25%,rgba(255,248,207,.08),transparent 38%); z-index:2; pointer-events:none;}}
+      .img-stage svg {{position:absolute; inset:0; width:100%; height:100%; display:block; z-index:1;}}
+      .muscle-zone-svg {{mix-blend-mode:screen; filter:saturate(1.28);}}
       .legend {{display:flex; gap:22px; flex-wrap:wrap; align-items:center; justify-content:center; margin-top:14px; color:#dce9d0; font-size:12px; font-weight:900;}}
       .legend span {{display:inline-flex; align-items:center; gap:7px;}}
       .dot {{width:12px; height:12px; border-radius:50%; display:inline-block;}}
@@ -1127,8 +1143,10 @@ def realistic_twin_html(soldier: Dict[str, Any], loads: Dict[str, int], title_ex
         <div class="twin-pill">coloração dinâmica</div>
       </div>
       <div class="img-stage">
-        <img src="data:image/webp;base64,{img_b64}" alt="{html.escape(silhouette_label)} digital twin" />
-        {twin_zone_overlays(loads, sex)}
+        <svg viewBox="0 0 980 1224" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{html.escape(silhouette_label)} digital twin">
+          <image href="data:image/webp;base64,{img_b64}" x="0" y="0" width="980" height="1224" preserveAspectRatio="xMidYMid meet" />
+          <g class="muscle-zone-svg">{twin_zone_overlays(loads, sex)}</g>
+        </svg>
       </div>
       <div class="legend">
         <span><i class="dot" style="background:#22c55e"></i>Controlado</span>
@@ -1141,7 +1159,7 @@ def realistic_twin_html(soldier: Dict[str, Any], loads: Dict[str, int], title_ex
 
 
 def render_dynamic_twin(soldier: Dict[str, Any], loads: Dict[str, int]) -> None:
-    components.html(realistic_twin_html(soldier, loads), height=910, scrolling=False)
+    components.html(realistic_twin_html(soldier, loads), height=1020, scrolling=False)
 
 
 def twin_page(profile: Dict[str, Any]) -> None:
