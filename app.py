@@ -149,9 +149,28 @@ table.op-table tr:nth-child(even) td {background:#fafbf5;}
 @media(max-width:900px){.block-container{padding-left:1rem!important; padding-right:1rem!important}.main-header{flex-direction:column; align-items:flex-start}.metric-card{min-height:110px}}
 
 /* Force navigation buttons to be wide, readable and visibly active */
-.stButton > button {min-height:54px !important; font-size:1rem !important; letter-spacing:.02em !important;}
-[data-testid="stBaseButton-primary"] {background:linear-gradient(135deg,var(--g900),var(--g700)) !important; color:#fff8cf !important; border-color:var(--g700) !important; box-shadow:0 13px 30px rgba(20,83,45,.23) !important;}
-[data-testid="stBaseButton-secondary"] {background:#fff !important; color:var(--g800) !important; border-color:rgba(20,83,45,.30) !important;}
+.stButton {width:100% !important;}
+.stButton > button {
+  width:100% !important;
+  min-height:66px !important;
+  font-size:1.03rem !important;
+  letter-spacing:.035em !important;
+  border-radius:16px !important;
+  font-weight:950 !important;
+}
+[data-testid="stBaseButton-primary"] {
+  background:linear-gradient(135deg,var(--g900),var(--g700)) !important;
+  color:#fff8cf !important;
+  border-color:var(--g700) !important;
+  box-shadow:0 16px 34px rgba(20,83,45,.26) !important;
+}
+[data-testid="stBaseButton-primary"] p, [data-testid="stBaseButton-primary"] span {color:#fff8cf !important;}
+[data-testid="stBaseButton-secondary"] {
+  background:rgba(255,255,255,.92) !important;
+  color:var(--g800) !important;
+  border-color:rgba(20,83,45,.35) !important;
+}
+[data-testid="column"] {padding-left:.35rem !important; padding-right:.35rem !important;}
 
 </style>
 """
@@ -642,7 +661,7 @@ def nav_button_grid(label: str, options: List[str], selected: str, key_prefix: s
         return selected
     selected = selected if selected in options else options[0]
     chosen = selected
-    cols = st.columns(len(options), gap="large")
+    cols = st.columns(len(options), gap="medium")
     for i, opt in enumerate(options):
         btn_type = "primary" if opt == selected else "secondary"
         safe_key = ''.join(ch if ch.isalnum() else '_' for ch in opt.lower())
@@ -1026,10 +1045,11 @@ def twin_svg(loads: Dict[str, int], sex: str) -> str:
     '''
 
 def twin_zone_overlays(loads: Dict[str, int], sex: str, predicted: bool = False) -> str:
-    """SVG overlays aligned to the embedded 980x1224 anatomical base images.
+    """Precise SVG overlays aligned to the 980x1224 anatomical base images.
 
-    This avoids the old crop/percentage mismatch: the image and highlights share
-    the same SVG coordinate system, so each colour stays on the intended group.
+    The goal is not to paint vague blobs over the image: each zone is a smaller
+    anatomical mask placed over the real muscle region. The image stays realistic
+    and the dynamic colour communicates the load level.
     """
     female = str(sex).upper().startswith("F")
 
@@ -1039,77 +1059,84 @@ def twin_zone_overlays(loads: Dict[str, int], sex: str, predicted: bool = False)
     def fill(key: str) -> str:
         return color_for_load(val(key))
 
-    def attrs(key: str, opacity: float = 0.54) -> str:
+    def attrs(key: str, opacity: float = 0.50) -> str:
         label = html.escape(MUSCLE_LABELS.get(key, key))
-        return f'fill="{fill(key)}" fill-opacity="{opacity}" stroke="rgba(255,248,207,.28)" stroke-width="1.2"><title>{label}: {val(key)}%</title>'
+        return (
+            f'fill="{fill(key)}" fill-opacity="{opacity}" '
+            f'stroke="rgba(255,248,207,.34)" stroke-width="1.0">'
+            f'<title>{label}: {val(key)}%</title>'
+        )
 
-    def ellipse(key: str, cx: float, cy: float, rx: float, ry: float, rotate: float = 0, opacity: float = 0.54) -> str:
+    def ellipse(key: str, cx: float, cy: float, rx: float, ry: float, rotate: float = 0, opacity: float = 0.50) -> str:
         tr = f' transform="rotate({rotate} {cx} {cy})"' if rotate else ""
         return f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}"{tr} {attrs(key, opacity)}</ellipse>'
 
-    def poly(key: str, pts: str, opacity: float = 0.54) -> str:
+    def poly(key: str, pts: str, opacity: float = 0.50) -> str:
         return f'<polygon points="{pts}" {attrs(key, opacity)}</polygon>'
 
-    def path(key: str, d: str, opacity: float = 0.54) -> str:
+    def path(key: str, d: str, opacity: float = 0.50) -> str:
         return f'<path d="{d}" {attrs(key, opacity)}</path>'
 
     zones: List[str] = []
+
     if female:
-        # FRONT — left figure
+        # Female base coordinates are slightly narrower and lower on the torso.
+        # FRONT figure
         zones += [
-            ellipse("shoulders", 184, 290, 43, 66, -14, .50),
-            ellipse("shoulders", 389, 290, 43, 66, 14, .50),
-            ellipse("arms", 154, 445, 30, 116, 5, .49),
-            ellipse("arms", 423, 445, 30, 116, -5, .49),
-            ellipse("chest", 247, 330, 58, 36, -6, .44),
-            ellipse("chest", 326, 330, 58, 36, 6, .44),
-            poly("core", "238,392 336,392 358,560 218,560", .48),
-            ellipse("quads", 232, 704, 44, 132, 5, .56),
-            ellipse("quads", 342, 704, 44, 132, -5, .56),
-            ellipse("calves", 215, 932, 31, 132, -3, .50),
-            ellipse("calves", 360, 932, 31, 132, 3, .50),
-            # BACK — right figure
-            ellipse("shoulders", 580, 282, 43, 66, -16, .46),
-            ellipse("shoulders", 790, 282, 43, 66, 16, .46),
-            ellipse("arms", 540, 448, 30, 116, 6, .48),
-            ellipse("arms", 834, 448, 30, 116, -6, .48),
-            path("back", "M616 290 C652 245,725 245,760 290 L760 435 C730 463,647 463,616 435 Z", .46),
-            ellipse("glutes", 638, 590, 60, 72, -8, .50),
-            ellipse("glutes", 738, 590, 60, 72, 8, .50),
-            ellipse("hamstrings", 630, 780, 40, 145, 4, .55),
-            ellipse("hamstrings", 752, 780, 40, 145, -4, .55),
-            ellipse("calves", 610, 956, 31, 120, -4, .48),
-            ellipse("calves", 775, 956, 31, 120, 4, .48),
+            path("shoulders", "M171 246 C193 221 226 238 221 281 C216 319 180 325 165 295 C154 273 158 256 171 246Z", .48),
+            path("shoulders", "M398 246 C376 221 343 238 348 281 C353 319 389 325 404 295 C415 273 411 256 398 246Z", .48),
+            path("chest", "M224 288 C246 268 276 270 288 304 C275 331 236 336 208 315 C207 304 214 294 224 288Z", .40),
+            path("chest", "M345 288 C323 268 293 270 281 304 C294 331 333 336 361 315 C362 304 355 294 345 288Z", .40),
+            path("core", "M242 340 L327 340 L342 508 L226 508 Z", .43),
+            path("arms", "M148 348 C177 372 173 510 150 560 C128 555 119 526 124 491 C126 431 128 377 148 348Z", .46),
+            path("arms", "M421 348 C392 372 396 510 419 560 C441 555 450 526 445 491 C443 431 441 377 421 348Z", .46),
+            path("quads", "M218 610 C246 628 255 750 231 842 C202 847 191 818 195 759 C198 695 199 641 218 610Z", .53),
+            path("quads", "M351 610 C323 628 314 750 338 842 C367 847 378 818 374 759 C371 695 370 641 351 610Z", .53),
+            path("calves", "M201 842 C226 860 232 1010 214 1084 C188 1084 181 1022 187 956 C190 903 190 866 201 842Z", .45),
+            path("calves", "M368 842 C343 860 337 1010 355 1084 C381 1084 388 1022 382 956 C379 903 379 866 368 842Z", .45),
+            # BACK figure
+            path("shoulders", "M568 250 C594 224 628 239 619 286 C609 322 568 321 553 292 C545 272 553 257 568 250Z", .46),
+            path("shoulders", "M810 250 C784 224 750 239 759 286 C769 322 810 321 825 292 C833 272 825 257 810 250Z", .46),
+            path("back", "M617 267 C650 226 729 226 761 267 L751 410 C719 451 660 451 627 410 Z", .42),
+            path("arms", "M534 354 C561 384 557 511 534 558 C512 553 503 522 510 488 C513 426 516 376 534 354Z", .45),
+            path("arms", "M844 354 C817 384 821 511 844 558 C866 553 875 522 868 488 C865 426 862 376 844 354Z", .45),
+            path("glutes", "M604 535 C644 507 683 531 684 593 C664 643 608 634 589 593 C589 568 594 548 604 535Z", .46),
+            path("glutes", "M774 535 C734 507 695 531 694 593 C714 643 770 634 789 593 C789 568 784 548 774 535Z", .46),
+            path("hamstrings", "M607 657 C641 677 649 806 621 871 C588 870 578 828 586 766 C591 711 592 674 607 657Z", .51),
+            path("hamstrings", "M771 657 C737 677 729 806 757 871 C790 870 800 828 792 766 C787 711 786 674 771 657Z", .51),
+            path("calves", "M589 870 C617 884 624 1019 604 1086 C578 1086 571 1028 576 964 C580 915 580 884 589 870Z", .44),
+            path("calves", "M789 870 C761 884 754 1019 774 1086 C800 1086 807 1028 802 964 C798 915 798 884 789 870Z", .44),
         ]
     else:
-        # FRONT — left figure
+        # Male base coordinates — more muscular shoulders/chest and lower legs.
+        # FRONT figure
         zones += [
-            ellipse("shoulders", 176, 298, 47, 70, -14, .50),
-            ellipse("shoulders", 405, 298, 47, 70, 14, .50),
-            ellipse("arms", 145, 458, 34, 126, 5, .48),
-            ellipse("arms", 435, 458, 34, 126, -5, .48),
-            ellipse("chest", 248, 342, 64, 42, -6, .43),
-            ellipse("chest", 331, 342, 64, 42, 6, .43),
-            poly("core", "244,392 342,392 370,610 216,610", .48),
-            ellipse("quads", 234, 735, 47, 142, 5, .57),
-            ellipse("quads", 348, 735, 47, 142, -5, .57),
-            ellipse("calves", 214, 968, 34, 132, -4, .50),
-            ellipse("calves", 372, 968, 34, 132, 4, .50),
-            # BACK — right figure
-            ellipse("shoulders", 582, 294, 48, 70, -16, .47),
-            ellipse("shoulders", 805, 294, 48, 70, 16, .47),
-            ellipse("arms", 538, 462, 34, 128, 6, .47),
-            ellipse("arms", 852, 462, 34, 128, -6, .47),
-            path("back", "M605 288 C652 238,735 238,784 288 L774 450 C736 494,654 494,616 450 Z", .47),
-            ellipse("glutes", 642, 615, 62, 76, -8, .51),
-            ellipse("glutes", 748, 615, 62, 76, 8, .51),
-            ellipse("hamstrings", 628, 792, 42, 152, 4, .56),
-            ellipse("hamstrings", 768, 792, 42, 152, -4, .56),
-            ellipse("calves", 608, 988, 35, 124, -4, .48),
-            ellipse("calves", 794, 988, 35, 124, 4, .48),
+            path("shoulders", "M164 252 C194 223 231 236 226 287 C218 328 174 335 154 302 C143 278 149 261 164 252Z", .48),
+            path("shoulders", "M421 252 C391 223 354 236 359 287 C367 328 411 335 431 302 C442 278 436 261 421 252Z", .48),
+            path("chest", "M214 288 C249 263 286 274 293 318 C273 349 228 353 195 322 C197 305 204 294 214 288Z", .39),
+            path("chest", "M371 288 C336 263 299 274 292 318 C312 349 357 353 390 322 C388 305 381 294 371 288Z", .39),
+            path("core", "M244 346 L342 346 L362 548 L224 548 Z", .42),
+            path("arms", "M143 348 C175 383 171 521 146 575 C121 570 112 533 120 496 C123 430 125 374 143 348Z", .45),
+            path("arms", "M442 348 C410 383 414 521 439 575 C464 570 473 533 465 496 C462 430 460 374 442 348Z", .45),
+            path("quads", "M217 626 C249 651 262 779 234 882 C200 885 187 844 193 784 C199 713 198 652 217 626Z", .53),
+            path("quads", "M368 626 C336 651 323 779 351 882 C385 885 398 844 392 784 C386 713 387 652 368 626Z", .53),
+            path("calves", "M197 870 C226 893 233 1046 214 1114 C184 1114 177 1049 184 979 C188 922 188 887 197 870Z", .44),
+            path("calves", "M388 870 C359 893 352 1046 371 1114 C401 1114 408 1049 401 979 C397 922 397 887 388 870Z", .44),
+            # BACK figure
+            path("shoulders", "M569 258 C600 228 640 241 628 294 C617 333 568 330 550 300 C543 279 552 265 569 258Z", .45),
+            path("shoulders", "M824 258 C793 228 753 241 765 294 C776 333 825 330 843 300 C850 279 841 265 824 258Z", .45),
+            path("back", "M607 264 C653 214 740 214 785 264 L767 430 C728 476 665 476 625 430 Z", .42),
+            path("arms", "M532 356 C562 392 558 526 532 577 C507 571 498 534 507 497 C511 431 514 377 532 356Z", .44),
+            path("arms", "M861 356 C831 392 835 526 861 577 C886 571 895 534 886 497 C882 431 879 377 861 356Z", .44),
+            path("glutes", "M602 552 C648 516 692 540 692 611 C668 664 606 656 586 611 C587 580 593 562 602 552Z", .46),
+            path("glutes", "M791 552 C745 516 701 540 701 611 C725 664 787 656 807 611 C806 580 800 562 791 552Z", .46),
+            path("hamstrings", "M606 674 C644 699 650 834 619 911 C583 911 573 862 582 794 C588 734 590 692 606 674Z", .50),
+            path("hamstrings", "M787 674 C749 699 743 834 774 911 C810 911 820 862 811 794 C805 734 803 692 787 674Z", .50),
+            path("calves", "M586 904 C616 920 626 1050 607 1115 C577 1115 569 1051 575 984 C579 935 579 912 586 904Z", .43),
+            path("calves", "M807 904 C777 920 767 1050 786 1115 C816 1115 824 1051 818 984 C814 935 814 912 807 904Z", .43),
         ]
-    return "\n".join(zones)
 
+    return "\n".join(zones)
 
 
 
@@ -1124,16 +1151,16 @@ def realistic_twin_html(soldier: Dict[str, Any], loads: Dict[str, int], title_ex
     return f'''
     <style>
       body {{ margin:0; background:transparent; font-family: Inter, Segoe UI, Arial, sans-serif; }}
-      .real-twin-card {{ background: linear-gradient(180deg,#06170d,#020b06); border: 1px solid rgba(255,248,207,.18); border-radius: 24px; padding: 20px 20px 16px; box-shadow: 0 28px 70px rgba(16,32,21,.24); color: #fff8cf; overflow:hidden; }}
-      .real-twin-head {{display:flex; justify-content:space-between; align-items:flex-start; gap:18px; margin-bottom:12px;}}
-      .real-twin-head h3 {{margin:0; font-size:24px; letter-spacing:.18em; text-transform:uppercase; font-weight:950;}}
-      .real-twin-head p {{margin:6px 0 0; color:#c4d5b5; font-weight:800; font-size:13px;}}
-      .twin-pill {{border:1px solid rgba(255,248,207,.22); border-radius:999px; padding:9px 12px; color:#fff8cf; font-size:12px; font-weight:950; white-space:nowrap;}}
-      .img-stage {{position:relative; width:min(100%, 700px); margin:0 auto; aspect-ratio: 980 / 1224; border-radius:18px; overflow:hidden; background:#020b06;}}
-      .img-stage::before {{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 25%,rgba(255,248,207,.08),transparent 38%); z-index:2; pointer-events:none;}}
+      .real-twin-card {{ background: linear-gradient(180deg,#06170d,#020b06); border: 1px solid rgba(255,248,207,.18); border-radius: 24px; padding: 18px 18px 14px; box-shadow: 0 28px 70px rgba(16,32,21,.24); color: #fff8cf; overflow:hidden; }}
+      .real-twin-head {{display:flex; justify-content:space-between; align-items:flex-start; gap:18px; margin-bottom:10px;}}
+      .real-twin-head h3 {{margin:0; font-size:21px; letter-spacing:.17em; text-transform:uppercase; font-weight:950;}}
+      .real-twin-head p {{margin:6px 0 0; color:#c4d5b5; font-weight:800; font-size:12px;}}
+      .twin-pill {{border:1px solid rgba(255,248,207,.22); border-radius:999px; padding:8px 11px; color:#fff8cf; font-size:11px; font-weight:950; white-space:nowrap;}}
+      .img-stage {{position:relative; width:min(100%, 610px); margin:0 auto; aspect-ratio: 980 / 1224; border-radius:18px; overflow:hidden; background:#020b06;}}
+      .img-stage::before {{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 25%,rgba(255,248,207,.06),transparent 38%); z-index:2; pointer-events:none;}}
       .img-stage svg {{position:absolute; inset:0; width:100%; height:100%; display:block; z-index:1;}}
-      .muscle-zone-svg {{mix-blend-mode:screen; filter:saturate(1.28);}}
-      .legend {{display:flex; gap:22px; flex-wrap:wrap; align-items:center; justify-content:center; margin-top:14px; color:#dce9d0; font-size:12px; font-weight:900;}}
+      .muscle-zone-svg {{mix-blend-mode:screen; filter:saturate(1.12) blur(.15px);}}
+      .legend {{display:flex; gap:18px; flex-wrap:wrap; align-items:center; justify-content:center; margin-top:12px; color:#dce9d0; font-size:11px; font-weight:900;}}
       .legend span {{display:inline-flex; align-items:center; gap:7px;}}
       .dot {{width:12px; height:12px; border-radius:50%; display:inline-block;}}
     </style>
@@ -1159,7 +1186,7 @@ def realistic_twin_html(soldier: Dict[str, Any], loads: Dict[str, int], title_ex
 
 
 def render_dynamic_twin(soldier: Dict[str, Any], loads: Dict[str, int]) -> None:
-    components.html(realistic_twin_html(soldier, loads), height=1020, scrolling=False)
+    components.html(realistic_twin_html(soldier, loads), height=855, scrolling=False)
 
 
 def twin_page(profile: Dict[str, Any]) -> None:
@@ -1176,7 +1203,7 @@ def twin_page(profile: Dict[str, Any]) -> None:
     with c3: metric_card("Risco", "Baixo" if n(soldier.get("injury_risk")) < 35 else "Moderado" if n(soldier.get("injury_risk")) < 60 else "Elevado", pct(soldier.get("injury_risk")))
     with c4: metric_card("Recuperação", pct(soldier.get("recovery_score")), "sono / fadiga / carga")
 
-    left, right = st.columns([1.18, .92], gap="large")
+    left, right = st.columns([0.88, 1.12], gap="large")
     with left:
         render_dynamic_twin(soldier, loads)
     with right:
