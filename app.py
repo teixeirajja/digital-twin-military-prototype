@@ -92,13 +92,15 @@ hr {border-color: rgba(20,83,45,.13) !important;}
 .logout-link:hover {background:#fff8cf !important; color:var(--g900) !important; border-color:#fff8cf !important;}
 
 /* Radio navigation */
-.nav-label {margin: 10px 0 6px 4px; color: var(--g800); font-size:.78rem; font-weight:950; text-transform:uppercase; letter-spacing:.06em;}
+.nav-label {margin: 18px 0 8px 4px; color: var(--g800); font-size:.78rem; font-weight:950; text-transform:uppercase; letter-spacing:.06em;}
+[data-testid="stRadio"] {width:100% !important; max-width:100% !important; margin-bottom:12px !important;}
 [data-testid="stRadio"] > label {display:none !important;}
-[data-testid="stRadio"] div[role="radiogroup"] {display:flex !important; flex-direction:row !important; flex-wrap:wrap !important; gap:8px !important; background:rgba(255,255,255,.78) !important; border:1px solid var(--line) !important; border-radius:999px !important; padding:8px !important; width:fit-content !important; box-shadow:0 10px 28px rgba(16,32,21,.07) !important;}
-[data-testid="stRadio"] div[role="radiogroup"] label {display:flex !important; align-items:center !important; justify-content:center !important; min-height:42px !important; padding:0 18px !important; border-radius:999px !important; border:1px solid rgba(20,83,45,.18) !important; background:#fff !important; color:var(--g800) !important; box-shadow:0 5px 14px rgba(16,32,21,.05) !important; cursor:pointer !important; font-weight:900 !important;}
+[data-testid="stRadio"] div[role="radiogroup"] {display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; gap:12px !important; background:rgba(255,255,255,.72) !important; border:1px solid var(--line) !important; border-radius:999px !important; padding:8px !important; width:100% !important; max-width:100% !important; box-shadow:0 10px 28px rgba(16,32,21,.07) !important;}
+[data-testid="stRadio"] div[role="radiogroup"] label {display:flex !important; align-items:center !important; justify-content:center !important; flex:1 1 0 !important; min-width:0 !important; min-height:46px !important; padding:0 18px !important; border-radius:999px !important; border:1px solid rgba(20,83,45,.18) !important; background:#fff !important; color:var(--g800) !important; box-shadow:0 5px 14px rgba(16,32,21,.05) !important; cursor:pointer !important; font-weight:950 !important; text-align:center !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {background:linear-gradient(135deg, var(--g800), var(--g600)) !important; color:#fff8cf !important; border-color:var(--g600) !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label input, [data-testid="stRadio"] div[role="radiogroup"] label > div:first-child {display:none !important;}
-[data-testid="stRadio"] div[role="radiogroup"] label p {color:inherit !important; font-size:.92rem !important; font-weight:900 !important;}
+[data-testid="stRadio"] div[role="radiogroup"] label p {color:inherit !important; font-size:.94rem !important; font-weight:950 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;}
+.header-context {margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,248,207,.18); color:#fff8cf !important; font-size:.98rem !important; font-weight:950 !important; letter-spacing:.05em; text-transform:none;}
 
 .section-card {background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:var(--shadow); margin-bottom:16px;}
 .section-title {background:#fff; border:1px solid var(--line); border-left:6px solid var(--g700); border-radius:14px; padding:16px 18px; font-size:1.1rem; font-weight:950; color:var(--ink); letter-spacing:.05em; margin:10px 0 16px;}
@@ -523,16 +525,70 @@ def get_muscle_loads(soldier_id: str) -> Dict[str, int]:
 # =========================================================
 # Top bar and navigation
 # =========================================================
+def context_title(profile: Dict[str, Any], mode: str, page: str) -> str:
+    role = profile_role(profile)
+    if mode == "command" and is_command_role(profile):
+        scope = command_scope_label(profile)
+        if page == "Dashboard":
+            return f"Modo comandante · Dashboard — {scope}"
+        if page == "Militares":
+            return f"Modo comandante · Militares — {scope}"
+        if page == "Simular treino":
+            return f"Modo comandante · Simulador coletivo — {scope}"
+        if page == "Admin":
+            return "Administração"
+        return f"Modo comandante · {page} — {scope}"
+
+    soldier = get_profile_soldier(profile)
+    who = profile_display(profile)
+    if soldier:
+        who = f"{safe(soldier.get('rank_code'))} {safe(soldier.get('full_name'))}".strip()
+    if page == "Meu perfil":
+        return f"Meu perfil · {who}"
+    if page == "Digital Twin":
+        return f"Digital Twin · {who}"
+    if page == "Simular treino":
+        return f"Simulador individual · {who}"
+    return f"{page} · {who}"
+
+
 def top_bar(profile: Dict[str, Any]) -> str:
     role = profile_role(profile)
     role_label = ROLE_LABELS.get(role, role)
 
+    # Ler primeiro o estado atual dos widgets para a bolha verde já mostrar o contexto correto.
+    if is_command_role(profile):
+        raw_mode = st.session_state.get("mode_radio")
+        if raw_mode in {"Modo comandante", "Modo individual"}:
+            mode = "command" if raw_mode == "Modo comandante" else "individual"
+        else:
+            mode = current_mode(profile)
+        st.session_state["mode"] = mode
+        if mode == "command":
+            pages = ["Dashboard", "Militares", "Simular treino"]
+            if role == "admin":
+                pages.append("Admin")
+        else:
+            pages = ["Meu perfil", "Digital Twin", "Simular treino"]
+    else:
+        mode = "individual"
+        st.session_state["mode"] = "individual"
+        pages = ["Meu perfil", "Digital Twin", "Simular treino"]
+
+    if st.session_state.get("nav_radio") not in pages:
+        st.session_state.pop("nav_radio", None)
+    default = st.session_state.get("page") if st.session_state.get("page") in pages else pages[0]
+    current_page = st.session_state.get("nav_radio") if st.session_state.get("nav_radio") in pages else default
+    st.session_state["page"] = current_page
+
     # Logout link inside the green header. It is handled at the start of main().
+    active_context = context_title(profile, mode, current_page)
     st.markdown(f"""
     <div class="main-header">
       <div>
         <h1>Military Digital Twin</h1>
         <p>Sessão iniciada · {html.escape(profile_display(profile))} · {html.escape(role_label)}</p>
+        <div class="header-context">{html.escape(active_context)}</div>
       </div>
       <a class="header-chip logout-link" href="?logout=1" target="_self">Terminar sessão</a>
     </div>
@@ -541,7 +597,7 @@ def top_bar(profile: Dict[str, Any]) -> str:
     if is_command_role(profile):
         st.markdown('<div class="nav-label">Escolher modo</div>', unsafe_allow_html=True)
         mode_labels = ["Modo comandante", "Modo individual"]
-        default_mode = "Modo comandante" if current_mode(profile) == "command" else "Modo individual"
+        default_mode = "Modo comandante" if mode == "command" else "Modo individual"
         selected_mode = st.radio(
             "Modo de utilização",
             mode_labels,
@@ -671,7 +727,6 @@ def operational_table(df: pd.DataFrame, title: str = "Tabela operacional") -> No
 
 def commander_dashboard(profile: Dict[str, Any]) -> None:
     scope = command_scope_label(profile)
-    st.markdown(f'<div class="section-title">Modo comandante · Dashboard — {html.escape(scope)}</div>', unsafe_allow_html=True)
     df = accessible_snapshot(exclude_own=True, profile=profile)
     df = filter_snapshot(df)
     render_metrics(df)
@@ -686,7 +741,6 @@ def render_individual_landing(soldier: Dict[str, Any], title: str = "Meu estado"
     if not soldier:
         st.warning("Perfil individual não encontrado para este utilizador.")
         return
-    st.markdown(f'<div class="section-title">{html.escape(title)} · {html.escape(safe(soldier.get("rank_code")))} {html.escape(safe(soldier.get("full_name")))}</div>', unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     status = safe(soldier.get("readiness_status"), "Atenção")
     with c1: metric_card("Prontidão", pct(soldier.get("readiness_score")), status)
@@ -894,7 +948,6 @@ def twin_page(profile: Dict[str, Any]) -> None:
         st.warning("Este utilizador ainda não tem soldier_id associado no perfil.")
         return
     loads = get_muscle_loads(str(soldier.get("soldier_id")))
-    st.markdown(f'<div class="section-title">Digital Twin · {html.escape(safe(soldier.get("rank_code")))} {html.escape(safe(soldier.get("full_name")))}</div>', unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     avg_load = int(round(sum(loads.values()) / max(1, len(loads))))
     top_group = max(loads, key=loads.get)
@@ -1006,7 +1059,6 @@ def accessible_groups(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
 
 
 def simulate_group_training(profile: Dict[str, Any]) -> None:
-    st.markdown('<div class="section-title">Simulador de treino coletivo</div>', unsafe_allow_html=True)
     df = accessible_snapshot(exclude_own=True, profile=profile)
     if df.empty:
         st.info("Sem militares acessíveis para simular.")
@@ -1071,7 +1123,6 @@ def simulate_individual_training(profile: Dict[str, Any]) -> None:
     if not soldier:
         st.warning("Perfil individual não encontrado.")
         return
-    st.markdown('<div class="section-title">Simular treino individual</div>', unsafe_allow_html=True)
     training_type = st.selectbox("Tipo de treino", ["Corrida contínua", "Corrida intervalada", "Marcha com carga", "Circuito de força", "Treino técnico-tático", "Recuperação ativa"])
     params, duration, intensity, focus = training_parameters(training_type)
     impact = int(round(intensity * 2.1 + duration / 10))
