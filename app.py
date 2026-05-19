@@ -88,9 +88,11 @@ hr {border-color: rgba(20,83,45,.13) !important;}
 .main-header {border-radius:24px; padding:21px 24px; background:linear-gradient(135deg, var(--g900), var(--g800) 60%, var(--g700)); color:#fff; margin-bottom:18px; box-shadow:0 22px 55px rgba(16,32,21,.22); display:flex; justify-content:space-between; align-items:center; gap:20px;}
 .main-header h1 {margin:0; color:#fff8cf !important; font-size:1.45rem; font-weight:950; letter-spacing:.10em; text-transform:uppercase;}
 .main-header p {margin:7px 0 0; color:#d8e7c7 !important; font-size:.83rem; font-weight:700;}
-.header-chip {display:inline-flex; align-items:center; justify-content:center; min-width:150px; padding:11px 16px; border-radius:14px; border:1px solid rgba(255,248,207,.30); color:#fff8cf; font-weight:900; background:rgba(0,0,0,.14);}
+.header-chip {display:inline-flex; align-items:center; justify-content:center; min-width:150px; padding:11px 16px; border-radius:14px; border:1px solid rgba(255,248,207,.30); color:#fff8cf !important; font-weight:900; background:rgba(0,0,0,.14); text-decoration:none !important;}
+.logout-link:hover {background:#fff8cf !important; color:var(--g900) !important; border-color:#fff8cf !important;}
 
 /* Radio navigation */
+.nav-label {margin: 10px 0 6px 4px; color: var(--g800); font-size:.78rem; font-weight:950; text-transform:uppercase; letter-spacing:.06em;}
 [data-testid="stRadio"] > label {display:none !important;}
 [data-testid="stRadio"] div[role="radiogroup"] {display:flex !important; flex-direction:row !important; flex-wrap:wrap !important; gap:8px !important; background:rgba(255,255,255,.78) !important; border:1px solid var(--line) !important; border-radius:999px !important; padding:8px !important; width:fit-content !important; box-shadow:0 10px 28px rgba(16,32,21,.07) !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label {display:flex !important; align-items:center !important; justify-content:center !important; min-height:42px !important; padding:0 18px !important; border-radius:999px !important; border:1px solid rgba(20,83,45,.18) !important; background:#fff !important; color:var(--g800) !important; box-shadow:0 5px 14px rgba(16,32,21,.05) !important; cursor:pointer !important; font-weight:900 !important;}
@@ -211,7 +213,11 @@ def logout() -> None:
         client_with_session().auth.sign_out()
     except Exception:
         pass
-    for k in ["access_token", "refresh_token", "profile", "user_email", "page"]:
+    try:
+        st.query_params.clear()
+    except Exception:
+        pass
+    for k in ["access_token", "refresh_token", "profile", "user_email", "page", "mode", "nav_radio", "mode_radio"]:
         st.session_state.pop(k, None)
     st.rerun()
 
@@ -399,6 +405,17 @@ def profile_display(profile: Dict[str, Any]) -> str:
     return str(profile.get("display_name") or profile.get("email") or "Utilizador")
 
 
+def is_command_role(profile: Dict[str, Any]) -> bool:
+    return profile_role(profile) in {"company_commander", "platoon_commander", "section_commander", "admin"}
+
+
+def current_mode(profile: Dict[str, Any]) -> str:
+    if not is_command_role(profile):
+        return "individual"
+    mode = st.session_state.get("mode", "command")
+    return mode if mode in {"command", "individual"} else "command"
+
+
 def get_assignments(profile: Dict[str, Any]) -> pd.DataFrame:
     try:
         data = sb_select("command_assignments", filters=[("profile_id", "eq", profile.get("id"))])
@@ -425,8 +442,13 @@ def command_scope_label(profile: Dict[str, Any]) -> str:
     return "Individual"
 
 
-def accessible_snapshot() -> pd.DataFrame:
-    """Reads current accessible force snapshot. RLS should restrict by logged-in user."""
+def accessible_snapshot(exclude_own: bool = False, profile: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
+    """Reads current accessible force snapshot. RLS should restrict by logged-in user.
+
+    In command mode, exclude the logged-in commander's own soldier row so that
+    command dashboards/lists represent the force under command, while the
+    commander's individual data stays in Meu perfil/Digital Twin.
+    """
     try:
         df = pd.DataFrame(sb_select("company_dashboard_current", order="full_name"))
     except Exception as exc:
@@ -435,6 +457,8 @@ def accessible_snapshot() -> pd.DataFrame:
         return pd.DataFrame()
     if df.empty:
         return df
+    if exclude_own and profile and profile.get("soldier_id") and "soldier_id" in df.columns:
+        df = df[df["soldier_id"].astype(str) != str(profile.get("soldier_id"))].copy()
     for col in ["readiness_score", "injury_risk", "recovery_score", "sleep_hours", "fatigue_score", "soreness_score", "cooper_m", "pushups", "situps", "pullups", "plank_sec"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -502,25 +526,44 @@ def get_muscle_loads(soldier_id: str) -> Dict[str, int]:
 def top_bar(profile: Dict[str, Any]) -> str:
     role = profile_role(profile)
     role_label = ROLE_LABELS.get(role, role)
+
+    # Logout link inside the green header. It is handled at the start of main().
     st.markdown(f"""
     <div class="main-header">
       <div>
         <h1>Military Digital Twin</h1>
         <p>Sessão iniciada · {html.escape(profile_display(profile))} · {html.escape(role_label)}</p>
       </div>
-      <div class="header-chip">Terminar sessão</div>
+      <a class="header-chip logout-link" href="?logout=1" target="_self">Terminar sessão</a>
     </div>
     """, unsafe_allow_html=True)
-    _, right = st.columns([7, 1.25])
-    with right:
-        if st.button("Terminar sessão", use_container_width=True, key="logout_btn"):
-            logout()
-    if role == "soldier":
-        pages = ["Militar", "Digital Twin", "Simular treino"]
+
+    if is_command_role(profile):
+        st.markdown('<div class="nav-label">Escolher modo</div>', unsafe_allow_html=True)
+        mode_labels = ["Modo comandante", "Modo individual"]
+        default_mode = "Modo comandante" if current_mode(profile) == "command" else "Modo individual"
+        selected_mode = st.radio(
+            "Modo de utilização",
+            mode_labels,
+            index=mode_labels.index(default_mode),
+            horizontal=True,
+            key="mode_radio",
+        )
+        mode = "command" if selected_mode == "Modo comandante" else "individual"
+        st.session_state["mode"] = mode
+        if mode == "command":
+            pages = ["Dashboard", "Militares", "Simular treino"]
+            if role == "admin":
+                pages.append("Admin")
+        else:
+            pages = ["Meu perfil", "Digital Twin", "Simular treino"]
     else:
-        pages = ["Dashboard", "Militares", "Meu perfil", "Digital Twin", "Simular treino"]
-        if role == "admin":
-            pages.append("Admin")
+        st.session_state["mode"] = "individual"
+        pages = ["Meu perfil", "Digital Twin", "Simular treino"]
+
+    st.markdown('<div class="nav-label">Secções disponíveis</div>', unsafe_allow_html=True)
+    if st.session_state.get("nav_radio") not in pages:
+        st.session_state.pop("nav_radio", None)
     default = st.session_state.get("page") if st.session_state.get("page") in pages else pages[0]
     selected = st.radio("Navegação", pages, index=pages.index(default), horizontal=True, key="nav_radio")
     st.session_state["page"] = selected
@@ -628,8 +671,8 @@ def operational_table(df: pd.DataFrame, title: str = "Tabela operacional") -> No
 
 def commander_dashboard(profile: Dict[str, Any]) -> None:
     scope = command_scope_label(profile)
-    st.markdown(f'<div class="section-title">Dashboard — {html.escape(scope)}</div>', unsafe_allow_html=True)
-    df = accessible_snapshot()
+    st.markdown(f'<div class="section-title">Modo comandante · Dashboard — {html.escape(scope)}</div>', unsafe_allow_html=True)
+    df = accessible_snapshot(exclude_own=True, profile=profile)
     df = filter_snapshot(df)
     render_metrics(df)
     st.divider()
@@ -679,7 +722,7 @@ def render_individual_landing(soldier: Dict[str, Any], title: str = "Meu estado"
 
 
 def soldiers_page(profile: Dict[str, Any]) -> None:
-    df = accessible_snapshot()
+    df = accessible_snapshot(exclude_own=True, profile=profile)
     if df.empty:
         st.info("Sem militares acessíveis.")
         return
@@ -964,7 +1007,7 @@ def accessible_groups(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
 
 def simulate_group_training(profile: Dict[str, Any]) -> None:
     st.markdown('<div class="section-title">Simulador de treino coletivo</div>', unsafe_allow_html=True)
-    df = accessible_snapshot()
+    df = accessible_snapshot(exclude_own=True, profile=profile)
     if df.empty:
         st.info("Sem militares acessíveis para simular.")
         return
@@ -1063,10 +1106,10 @@ def simulate_individual_training(profile: Dict[str, Any]) -> None:
 
 
 def simulate_training(profile: Dict[str, Any]) -> None:
-    if profile_role(profile) == "soldier":
-        simulate_individual_training(profile)
-    else:
+    if current_mode(profile) == "command" and is_command_role(profile):
         simulate_group_training(profile)
+    else:
+        simulate_individual_training(profile)
 
 # =========================================================
 # Admin quick inspection
@@ -1087,6 +1130,11 @@ def admin_page(profile: Dict[str, Any]) -> None:
 # Main
 # =========================================================
 def main() -> None:
+    try:
+        if st.query_params.get("logout"):
+            logout()
+    except Exception:
+        pass
     profile = require_login()
     page = top_bar(profile)
     if page == "Dashboard":
