@@ -172,6 +172,39 @@ table.op-table tr:nth-child(even) td {background:#fafbf5;}
 }
 [data-testid="column"] {padding-left:.35rem !important; padding-right:.35rem !important;}
 
+
+/* V26: stronger navigation readability. Keep selected buttons green and unselected readable. */
+.stButton button[kind="primary"],
+.stButton [data-testid="stBaseButton-primary"] {
+  background: linear-gradient(135deg, var(--g900), var(--g700)) !important;
+  border: 1px solid var(--g700) !important;
+  color: #fff8cf !important;
+}
+.stButton button[kind="primary"] *,
+.stButton [data-testid="stBaseButton-primary"] *,
+.stButton button[kind="primary"] p,
+.stButton [data-testid="stBaseButton-primary"] p {
+  color: #fff8cf !important;
+  opacity: 1 !important;
+}
+.stButton button[kind="secondary"],
+.stButton [data-testid="stBaseButton-secondary"] {
+  background: rgba(255,255,255,.96) !important;
+  border: 1px solid rgba(20,83,45,.38) !important;
+  color: var(--g800) !important;
+}
+.stButton button[kind="secondary"] *,
+.stButton [data-testid="stBaseButton-secondary"] *,
+.stButton button[kind="secondary"] p,
+.stButton [data-testid="stBaseButton-secondary"] p {
+  color: var(--g800) !important;
+  opacity: 1 !important;
+}
+.stButton button:disabled,
+.stButton button[disabled] {
+  opacity: 1 !important;
+}
+
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
@@ -624,6 +657,26 @@ def apply_section_filter(df: pd.DataFrame, selected_platoon: str, selected_secti
             out = out[out["section_name"] == selected_section]
     return out
 
+
+def ordered_subunit_frame(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
+    """Build ordered subunit labels so 1.º Pelotão/sections and 2.º Pelotão/sections do not mix."""
+    if df.empty:
+        return df.copy(), []
+    out = enrich_hierarchy_columns(df).copy()
+    out["platoon_order"] = out.get("platoon_order", pd.Series([99] * len(out))).fillna(99).astype(int)
+    out["section_order"] = out.get("section_order", pd.Series([99] * len(out))).fillna(99).astype(int)
+    platoon_name = out.get("platoon_name", pd.Series(["—"] * len(out))).fillna("—").astype(str)
+    section_name = out.get("section_name", pd.Series(["—"] * len(out))).fillna("—").astype(str)
+    # Tenentes/comandantes de pelotão, sem secção, ficam no cartão do próprio pelotão.
+    out["subunit_label"] = [
+        p if (not sec or sec == "—" or sec.lower() == "nan") else f"{p} · {sec}"
+        for p, sec in zip(platoon_name, section_name)
+    ]
+    out["subunit_sort"] = out["platoon_order"] * 100 + out["section_order"].where(section_name.ne("—"), -1)
+    order_df = out[["subunit_label", "subunit_sort"]].drop_duplicates().sort_values(["subunit_sort", "subunit_label"])
+    order = order_df["subunit_label"].tolist()
+    return out, order
+
 # =========================================================
 # Top bar and navigation
 # =========================================================
@@ -784,11 +837,22 @@ def render_charts(df: pd.DataFrame) -> None:
         fig = px.scatter(df, x="readiness_score", y="injury_risk", size="recovery_score", color="readiness_status", color_discrete_map=colors, hover_name="full_name", labels={"readiness_score":"Prontidão", "injury_risk":"Risco de lesão", "readiness_status":"Estado"}, title="Prontidão vs risco")
         st.plotly_chart(apply_chart_style(fig, 440), use_container_width=True)
 
-    df_group = enrich_hierarchy_columns(df)
-    group_col = "section_full_label" if "section_full_label" in df_group and df_group["section_full_label"].notna().any() else "platoon_name"
-    if group_col in df_group:
-        g = df_group.groupby([group_col, "readiness_status"]).size().reset_index(name="militares")
-        fig = px.bar(g, x=group_col, y="militares", color="readiness_status", color_discrete_map=colors, title="Estado por subunidade", labels={group_col:"Subunidade", "militares":"Militares", "readiness_status":"Estado"})
+    df_group, subunit_order = ordered_subunit_frame(df)
+    if not df_group.empty and "subunit_label" in df_group:
+        g = df_group.groupby(["subunit_label", "readiness_status"], as_index=False).size().rename(columns={"size": "militares"})
+        g["subunit_label"] = pd.Categorical(g["subunit_label"], categories=subunit_order, ordered=True)
+        g = g.sort_values("subunit_label")
+        fig = px.bar(
+            g,
+            x="subunit_label",
+            y="militares",
+            color="readiness_status",
+            color_discrete_map=colors,
+            category_orders={"subunit_label": subunit_order, "readiness_status": STATUS_ORDER},
+            title="Estado por subunidade",
+            labels={"subunit_label":"Subunidade", "militares":"Militares", "readiness_status":"Estado"},
+        )
+        fig.update_xaxes(categoryorder="array", categoryarray=subunit_order, tickangle=0)
         st.plotly_chart(apply_chart_style(fig, 380), use_container_width=True)
 
 
