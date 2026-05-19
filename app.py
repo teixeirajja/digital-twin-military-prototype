@@ -205,9 +205,46 @@ table.op-table tr:nth-child(even) td {background:#fafbf5;}
   opacity: 1 !important;
 }
 
+
+/* V28 login page with official APTUS identity */
+.login-shell {max-width: 1040px !important; margin: 4.5vh auto 0 auto !important;}
+.login-hero-v28 {
+  position: relative;
+  overflow:hidden;
+  border-radius: 26px;
+  padding: 26px 28px;
+  background:
+    radial-gradient(circle at 82% 16%, rgba(255,248,207,.12), transparent 28%),
+    linear-gradient(135deg, #05200f, #073618 55%, #0b4a25);
+  box-shadow: 0 30px 80px rgba(16,32,21,.26);
+  border: 1px solid rgba(255,248,207,.14);
+}
+.login-hero-v28:before {
+  content:"";
+  position:absolute; inset:0;
+  background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events:none;
+}
+.login-hero-inner {position:relative; display:grid; grid-template-columns: 250px 1fr auto; gap:24px; align-items:center;}
+.aptus-logo-card {background:rgba(255,255,255,.95); border-radius:22px; padding:14px; border:1px solid rgba(255,255,255,.50); box-shadow:0 18px 38px rgba(0,0,0,.18);}
+.aptus-logo-card img {width:100%; height:150px; object-fit:contain; display:block;}
+.login-kicker {display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; background:rgba(255,248,207,.10); border:1px solid rgba(255,248,207,.20); color:#fff8cf; font-weight:950; font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px;}
+.login-title-v28 {margin:0; color:#fff8cf !important; font-size:2.05rem; line-height:1.05; font-weight:950; letter-spacing:.12em; text-transform:uppercase;}
+.login-subtitle-v28 {margin:12px 0 0; color:#d8e7c7 !important; font-size:.96rem; font-weight:750; max-width:620px;}
+.login-right-badges {display:flex; flex-direction:column; gap:10px; align-items:flex-end;}
+.login-badge-v28 {color:#fff8cf; background:rgba(0,0,0,.18); border:1px solid rgba(255,248,207,.28); border-radius:999px; padding:10px 14px; font-size:.76rem; font-weight:950; text-transform:uppercase; white-space:nowrap;}
+.login-hint-v28 {max-width:1040px; margin:14px auto 0; background:rgba(255,255,255,.80); border:1px solid var(--line); border-radius:18px; padding:14px 16px; box-shadow:0 12px 28px rgba(16,32,21,.07); color:#344030;}
+.login-hint-v28 b {color:var(--g800);} .login-hint-v28 code {background:#e7efdc; color:#14532d; padding:2px 7px; border-radius:7px; font-weight:850;}
+.login-error-help {max-width:1040px; margin:10px auto 0; background:#fff7ed; border:1px solid #fed7aa; border-left:5px solid #f97316; color:#7c2d12; border-radius:14px; padding:12px 14px; font-weight:700;}
+.login-error-help code {background:#ffedd5; padding:2px 6px; border-radius:6px;}
+@media(max-width:900px){.login-hero-inner{grid-template-columns:1fr}.login-right-badges{align-items:flex-start}.aptus-logo-card{max-width:230px}.login-title-v28{font-size:1.45rem}}
+
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
+
+APTUS_LOGO_DATA_URI = "data:image/webp;base64,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"
 
 STATUS_ORDER = ["Pronto", "Atenção", "Risco"]
 ROLE_LABELS = {
@@ -298,18 +335,22 @@ def logout() -> None:
 
 def login_page() -> None:
     st.markdown(
-        """
+        f"""
         <div class="login-shell">
-          <div class="login-hero">
-            <div class="login-top">
-              <div class="login-brand">
-                <div class="login-logo">🛡️</div>
-                <div>
-                  <h1 class="login-title">Military Digital Twin</h1>
-                  <p class="login-subtitle">Plataforma de monitorização, prontidão e simulação de treino militar</p>
-                </div>
+          <div class="login-hero-v28">
+            <div class="login-hero-inner">
+              <div class="aptus-logo-card">
+                <img src="{APTUS_LOGO_DATA_URI}" alt="APTUS Digital Readiness Twin">
               </div>
-              <div class="login-badge">● Sistema ativo</div>
+              <div>
+                <div class="login-kicker">● acesso autenticado</div>
+                <h1 class="login-title-v28">APTUS</h1>
+                <p class="login-subtitle-v28">Digital Readiness Twin · plataforma de monitorização, prontidão e simulação de treino militar.</p>
+              </div>
+              <div class="login-right-badges">
+                <div class="login-badge-v28">● sistema ativo</div>
+                <div class="login-badge-v28">Supabase Auth</div>
+              </div>
             </div>
           </div>
         </div>
@@ -323,7 +364,8 @@ def login_page() -> None:
     if submitted:
         try:
             client = base_client()
-            response = client.auth.sign_in_with_password({"email": email.strip(), "password": password})
+            clean_email = email.strip().lower()
+            response = client.auth.sign_in_with_password({"email": clean_email, "password": password})
             if not response.session or not response.user:
                 st.error("Login inválido.")
                 st.stop()
@@ -337,16 +379,24 @@ def login_page() -> None:
                 prof = auth_client.table("profiles").select("*").eq("email", response.user.email).maybe_single().execute().data
             if not prof:
                 st.error("Login feito, mas este utilizador ainda não está associado a um perfil da aplicação.")
+                st.markdown('<div class="login-error-help">Corre o SQL <code>06_refresh_auth_mapping_after_creating_users.sql</code> para ligar o utilizador Auth ao perfil da aplicação.</div>', unsafe_allow_html=True)
                 st.stop()
             st.session_state["profile"] = prof
             st.session_state["page"] = "Dashboard" if prof.get("app_role") != "soldier" else "Militar"
             st.rerun()
         except Exception as exc:
-            st.error("Não foi possível iniciar sessão. Confirma email, password e associação Auth → profiles.")
-            st.caption(str(exc))
+            msg = str(exc)
+            st.error("Não foi possível iniciar sessão.")
+            if "Invalid login credentials" in msg:
+                st.markdown(
+                    '<div class="login-error-help">Credenciais Auth inválidas. Para o Tenente Hugo, confirma que existe em <b>Authentication → Users</b> e faz reset da password para <code>Ten2026!</code>. Também podes correr o SQL incluído <code>fix_demo_auth_passwords.sql</code>.</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.caption(msg)
     st.markdown(
         """
-        <div class="login-demo">
+        <div class="login-hint-v28">
             <b>Credenciais principais de teste</b><br>
             Companhia: <code>cap.teixeira@militarytwin.pt</code> / <code>Cmd2026!</code><br>
             1.º Pelotão: <code>hugo.dias@militarytwin.pt</code> / <code>Ten2026!</code><br>
@@ -354,7 +404,7 @@ def login_page() -> None:
             Secção: <code>ines.vicente@militarytwin.pt</code> / <code>Sarg2026!</code><br>
             Militar: <code>rafael.costa@militarytwin.pt</code> / <code>Mil2026!</code>
         </div>
-        <div class="login-foot">Protótipo com Supabase Auth + PostgreSQL + Streamlit</div>
+        <div class="login-foot">APTUS · Digital Readiness Twin · protótipo Streamlit + Supabase PostgreSQL/Auth</div>
         """,
         unsafe_allow_html=True,
     )
