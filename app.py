@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import json
 import math
 import uuid
 import textwrap
@@ -315,6 +316,20 @@ def sb_select(table: str, columns: str = "*", order: Optional[str] = None, desc:
 def sb_insert_many(table: str, payloads: List[Dict[str, Any]]) -> None:
     if payloads:
         client_with_session().table(table).insert(payloads).execute()
+
+
+def sb_delete_where(table: str, filters: List[Tuple[str, str, Any]]) -> None:
+    query = client_with_session().table(table).delete()
+    for col, op, value in filters:
+        if op == "eq":
+            query = query.eq(col, value)
+        elif op == "in":
+            query = query.in_(col, value)
+        elif op == "gte":
+            query = query.gte(col, value)
+        elif op == "lte":
+            query = query.lte(col, value)
+    query.execute()
 
 # =========================================================
 # Auth
@@ -1065,6 +1080,8 @@ def render_individual_landing(soldier: Dict[str, Any], title: str = "Meu estado"
         </div>
         """, unsafe_allow_html=True)
 
+    render_manual_activity_entry(st.session_state.get("profile", {}), soldier)
+
 
 def soldiers_page(profile: Dict[str, Any]) -> None:
     df = accessible_snapshot(exclude_own=True, profile=profile)
@@ -1584,6 +1601,316 @@ def muscle_delta_for_training(training_type: str, intensity: int, duration: int,
 
 def update_loads(loads: Dict[str, int], delta: Dict[str, int]) -> Dict[str, int]:
     return {k: max(0, min(100, n(loads.get(k)) + int(delta.get(k, 0)))) for k in MUSCLE_LABELS}
+
+
+# =========================================================
+# Manual activity logging — temporary replacement for wearable sync
+# =========================================================
+TRAINING_FOCUS_BY_TYPE = {
+    "Corrida contínua": "Pernas",
+    "Corrida intervalada": "Pernas",
+    "Marcha com carga": "Pernas/Core",
+    "Circuito de força": "Full body",
+    "Treino técnico-tático": "Operacional",
+    "Recuperação ativa": "Recuperação",
+}
+
+
+def _json_notes(payload: Dict[str, Any], free_notes: str = "") -> str:
+    try:
+        txt = json.dumps(payload, ensure_ascii=False, default=str)
+    except Exception:
+        txt = str(payload)
+    if free_notes.strip():
+        return f"{free_notes.strip()}\n\n[DADOS_MANUAIS]\n{txt}"
+    return f"[DADOS_MANUAIS]\n{txt}"
+
+
+def _status_from_scores(readiness: int, risk: int) -> str:
+    if readiness < 55 or risk >= 60:
+        return "Risco"
+    if readiness < 75 or risk >= 40:
+        return "Atenção"
+    return "Pronto"
+
+
+def _manual_activity_specific_fields(training_type: str) -> Dict[str, Any]:
+    """Fields that would normally come from Garmin/wearables, captured manually for the MVP."""
+    data: Dict[str, Any] = {}
+    if training_type == "Corrida contínua":
+        c1, c2, c3, c4 = st.columns(4, gap="large")
+        with c1: data["distancia_km"] = st.number_input("Distância (km)", 0.0, 60.0, 5.0, 0.1, key="act_run_dist")
+        with c2: data["ritmo_medio"] = st.text_input("Ritmo médio", "05:20/km", key="act_run_pace")
+        with c3: data["fc_media"] = st.number_input("FC média", 0, 230, 150, key="act_run_hr")
+        with c4: data["desnivel_m"] = st.number_input("Desnível + (m)", 0, 3000, 0, key="act_run_elev")
+    elif training_type == "Corrida intervalada":
+        c1, c2, c3, c4 = st.columns(4, gap="large")
+        with c1: data["repeticoes"] = st.number_input("Repetições", 1, 30, 8, key="act_int_reps")
+        with c2: data["distancia_rep_m"] = st.number_input("Distância/rep (m)", 50, 3000, 400, key="act_int_dist")
+        with c3: data["recuperacao_s"] = st.number_input("Recuperação (s)", 0, 600, 90, key="act_int_rec")
+        with c4: data["fc_max"] = st.number_input("FC máx.", 0, 240, 175, key="act_int_hrmax")
+    elif training_type == "Marcha com carga":
+        c1, c2, c3, c4 = st.columns(4, gap="large")
+        with c1: data["distancia_km"] = st.number_input("Distância (km)", 0.0, 60.0, 8.0, 0.1, key="act_march_dist")
+        with c2: data["carga_externa_kg"] = st.number_input("Carga externa (kg)", 0, 60, 18, key="act_march_load")
+        with c3: data["terreno"] = st.selectbox("Terreno", ["Plano", "Misto", "Inclinado", "Técnico"], key="act_march_terrain")
+        with c4: data["desnivel_m"] = st.number_input("Desnível + (m)", 0, 3000, 200, key="act_march_elev")
+    elif training_type == "Circuito de força":
+        c1, c2, c3, c4 = st.columns(4, gap="large")
+        with c1: data["foco"] = st.selectbox("Foco muscular", ["Full body", "Superior", "Inferior", "Core"], key="act_strength_focus")
+        with c2: data["series_totais"] = st.number_input("Séries totais", 0, 80, 20, key="act_strength_sets")
+        with c3: data["carga_media"] = st.selectbox("Carga média", ["Baixa", "Média", "Alta"], index=1, key="act_strength_load")
+        with c4: data["falha_muscular"] = st.selectbox("Falha muscular?", ["Não", "Parcial", "Sim"], key="act_strength_failure")
+        data["exercicios_principais"] = st.text_input("Exercícios principais", "agachamento, flexões, prancha", key="act_strength_ex")
+    elif training_type == "Treino técnico-tático":
+        c1, c2, c3, c4 = st.columns(4, gap="large")
+        with c1: data["cenario"] = st.selectbox("Cenário", ["Patrulha", "Progressão", "Combate aproximado", "Reconhecimento", "Ordem unida/coordenação"], key="act_tac_scen")
+        with c2: data["carga_externa_kg"] = st.number_input("Carga externa (kg)", 0, 60, 12, key="act_tac_load")
+        with c3: data["stress_cognitivo"] = st.slider("Stress cognitivo", 0, 10, 5, key="act_tac_stress")
+        with c4: data["complexidade"] = st.selectbox("Complexidade", ["Baixa", "Média", "Alta"], index=1, key="act_tac_complex")
+    else:
+        c1, c2, c3 = st.columns(3, gap="large")
+        with c1: data["modalidade"] = st.selectbox("Modalidade", ["Mobilidade", "Bicicleta leve", "Caminhada", "Natação leve", "Alongamentos"], key="act_rec_mod")
+        with c2: data["percepcao_recuperacao"] = st.slider("Recuperação percebida", 0, 10, 7, key="act_rec_feel")
+        with c3: data["dor_pos_sessao"] = st.slider("Dor após sessão", 0, 10, 2, key="act_rec_pain")
+    return data
+
+
+def _activity_focus(training_type: str, type_data: Dict[str, Any]) -> str:
+    if training_type == "Circuito de força":
+        return safe(type_data.get("foco"), "Full body")
+    return TRAINING_FOCUS_BY_TYPE.get(training_type, "Operacional")
+
+
+def _compute_activity_outcome(soldier: Dict[str, Any], loads_now: Dict[str, int], training_type: str, duration: int, rpe: int, focus: str, fatigue: int, soreness: int, stress: int, pain: int, sleep_h: float, quality: int) -> Tuple[Dict[str, int], Dict[str, int], int, int, int, str, str]:
+    delta = muscle_delta_for_training(training_type, rpe, duration, focus)
+    # Feedback real pós-treino ajusta o efeito que seria calculado só por plano.
+    feedback_factor = 1.0 + max(0, rpe - 6) * 0.06 + max(0, soreness - 5) * 0.04 + max(0, pain - 3) * 0.05
+    if training_type == "Recuperação ativa":
+        feedback_factor = 1.0
+    delta = {k: int(round(v * feedback_factor)) for k, v in delta.items()}
+    loads_after = update_loads(loads_now, delta)
+
+    base_ready = n(soldier.get("readiness_score"), 65)
+    base_risk = n(soldier.get("injury_risk"), 35)
+    base_recovery = n(soldier.get("recovery_score"), 60)
+    training_load = int(round(duration * rpe / 10))
+    sleep_penalty = max(0, int(round((6.5 - float(sleep_h)) * 4)))
+    pain_penalty = pain * 2
+    fatigue_penalty = max(0, fatigue - 4) * 2
+    stress_penalty = max(0, stress - 5)
+    quality_bonus = max(0, quality - 3) * 2
+    recovery_bonus = 8 if training_type == "Recuperação ativa" else 0
+    high_load_penalty = max(0, max(loads_after.values()) - 70) // 3
+
+    readiness = max(0, min(100, base_ready - training_load - sleep_penalty - fatigue_penalty - stress_penalty - pain_penalty - high_load_penalty + quality_bonus + recovery_bonus))
+    risk = max(0, min(100, base_risk + int(training_load * .65) + pain_penalty + max(0, soreness - 5) * 2 + high_load_penalty * 2 - recovery_bonus))
+    recovery = max(0, min(100, base_recovery - int(training_load * .75) - fatigue_penalty - sleep_penalty + recovery_bonus + quality_bonus))
+    status = _status_from_scores(readiness, risk)
+
+    if status == "Pronto":
+        explanation = "Atividade registada. Resposta compatível com continuação do plano normal."
+    elif status == "Atenção":
+        explanation = "Atividade registada. Controlar carga acumulada e evitar novo estímulo intenso consecutivo."
+    else:
+        explanation = "Atividade registada. Risco elevado; adaptar treino seguinte e priorizar recuperação."
+    return delta, loads_after, readiness, risk, recovery, status, explanation
+
+
+def _save_manual_activity(profile: Dict[str, Any], soldier: Dict[str, Any], payload: Dict[str, Any]) -> None:
+    soldier_id = str(soldier.get("soldier_id"))
+    activity_date = payload["activity_date"].isoformat() if hasattr(payload["activity_date"], "isoformat") else str(payload["activity_date"])
+    training_type = payload["training_type"]
+    duration = int(payload["duration"])
+    rpe = int(payload["rpe"])
+    focus = payload["focus"]
+    type_data = payload["type_data"]
+    feedback = payload["feedback"]
+    notes = payload.get("notes", "")
+    loads_after = payload["loads_after"]
+
+    model_notes = _json_notes({
+        "origem": "insercao_manual_sem_wearable",
+        "tipo": training_type,
+        "dados_especificos": type_data,
+        "feedback_pos_treino": feedback,
+        "modelo": {
+            "delta_muscular": payload["delta"],
+            "prontidao_calculada": payload["readiness"],
+            "risco_calculado": payload["risk"],
+            "recuperacao_calculada": payload["recovery"],
+            "estado": payload["status"],
+        },
+    }, notes)
+
+    sb_insert_many("training_sessions", [{
+        "soldier_id": soldier_id,
+        "session_date": activity_date,
+        "session_type": training_type,
+        "duration_min": duration,
+        "intensity": rpe,
+        "load_ua": round(duration * rpe, 1),
+        "focus_area": focus,
+        "completed": True,
+        "notes": model_notes,
+    }])
+
+    # Registo diário: guarda estado subjetivo que normalmente ajudaria a calibrar o digital twin.
+    sb_delete_where("daily_records", [("soldier_id", "eq", soldier_id), ("record_date", "eq", activity_date)])
+    sb_insert_many("daily_records", [{
+        "soldier_id": soldier_id,
+        "record_date": activity_date,
+        "sleep_hours": float(feedback["sleep_hours"]),
+        "fatigue_score": int(feedback["fatigue_score"]),
+        "soreness_score": int(feedback["soreness_score"]),
+        "stress_score": int(feedback["stress_score"]),
+        "hydration_score": int(feedback["hydration_score"]),
+        "notes": model_notes,
+    }])
+
+    # Readiness calculado após a atividade: fica disponível nas views latest_*.
+    sb_delete_where("readiness_scores", [("soldier_id", "eq", soldier_id), ("score_date", "eq", activity_date)])
+    sb_insert_many("readiness_scores", [{
+        "soldier_id": soldier_id,
+        "score_date": activity_date,
+        "readiness_score": int(payload["readiness"]),
+        "injury_risk": int(payload["risk"]),
+        "recovery_score": int(payload["recovery"]),
+        "status": payload["status"],
+        "explanation": payload["explanation"],
+    }])
+
+    # Muscle groups detalhado + tabela legacy para compatibilidade.
+    sb_delete_where("muscle_group_loads", [("soldier_id", "eq", soldier_id), ("load_date", "eq", activity_date)])
+    sb_insert_many("muscle_group_loads", [{
+        "soldier_id": soldier_id,
+        "load_date": activity_date,
+        "muscle_group_code": k,
+        "load_value": int(v),
+        "source": "manual",
+    } for k, v in loads_after.items()])
+
+    sb_delete_where("muscle_loads", [("soldier_id", "eq", soldier_id), ("load_date", "eq", activity_date)])
+    sb_insert_many("muscle_loads", [{
+        "soldier_id": soldier_id,
+        "load_date": activity_date,
+        "chest": int(loads_after.get("chest", 0)),
+        "back": int(loads_after.get("back", 0)),
+        "shoulders": int(loads_after.get("shoulders", 0)),
+        "arms": int(loads_after.get("arms", 0)),
+        "core": int(loads_after.get("core", 0)),
+        "legs": int(round((loads_after.get("quads", 0) + loads_after.get("hamstrings", 0) + loads_after.get("glutes", 0)) / 3)),
+        "calves": int(loads_after.get("calves", 0)),
+    }])
+
+    if int(payload["risk"]) >= 60 or int(feedback["pain_score"]) >= 5:
+        sb_insert_many("recommendations", [{
+            "soldier_id": soldier_id,
+            "rec_date": activity_date,
+            "priority": "Alta" if int(payload["risk"]) >= 70 else "Média",
+            "category": "Pós-treino",
+            "title": "Ajustar carga após atividade manual",
+            "message": payload["explanation"],
+            "status": "active",
+        }])
+
+
+def render_manual_activity_entry(profile: Dict[str, Any], soldier: Dict[str, Any]) -> None:
+    if not soldier or not soldier.get("soldier_id"):
+        return
+    sid = str(soldier.get("soldier_id"))
+    toggle_key = f"show_activity_form_{sid}"
+    st.markdown('<div class="section-title">Registo manual de atividade</div>', unsafe_allow_html=True)
+    c1, c2 = st.columns([.35, .65], gap="large")
+    with c1:
+        if st.button("+ Adicionar atividade", key=f"toggle_activity_{sid}", use_container_width=True, type="primary"):
+            st.session_state[toggle_key] = not st.session_state.get(toggle_key, False)
+    with c2:
+        st.markdown('<div class="mini-note">Enquanto não há sincronização com wearables, este registo alimenta treino, fadiga, recuperação, prontidão e mapa muscular.</div>', unsafe_allow_html=True)
+
+    if not st.session_state.get(toggle_key, False):
+        return
+
+    with st.form(f"manual_activity_form_{sid}"):
+        st.markdown('<div class="info-card"><h3>Adicionar atividade concluída</h3>', unsafe_allow_html=True)
+        c1, c2, c3, c4 = st.columns(4, gap="large")
+        with c1:
+            activity_date = st.date_input("Data", value=date.today(), key=f"act_date_{sid}")
+        with c2:
+            training_type = st.selectbox("Tipo de treino", ["Corrida contínua", "Corrida intervalada", "Marcha com carga", "Circuito de força", "Treino técnico-tático", "Recuperação ativa"], key=f"act_type_{sid}")
+        with c3:
+            duration = st.number_input("Duração (min)", 5, 300, 45, key=f"act_duration_{sid}")
+        with c4:
+            rpe = st.slider("Intensidade/RPE", 1, 10, 6, key=f"act_rpe_{sid}")
+
+        type_data = _manual_activity_specific_fields(training_type)
+        focus = _activity_focus(training_type, type_data)
+
+        st.markdown("**Feedback pós-treino**")
+        f1, f2, f3, f4, f5, f6 = st.columns(6, gap="large")
+        with f1: fatigue = st.slider("Fadiga", 0, 10, 5, key=f"act_fatigue_{sid}")
+        with f2: soreness = st.slider("Dores musculares", 0, 10, 4, key=f"act_soreness_{sid}")
+        with f3: pain = st.slider("Dor/lesão", 0, 10, 0, key=f"act_pain_{sid}")
+        with f4: stress = st.slider("Stress", 0, 10, 4, key=f"act_stress_{sid}")
+        with f5: hydration = st.slider("Hidratação", 0, 10, 7, key=f"act_hydration_{sid}")
+        with f6: quality = st.slider("Qualidade", 1, 5, 3, key=f"act_quality_{sid}")
+        sleep_hours = st.number_input("Sono da noite anterior (h)", 0.0, 14.0, float(soldier.get("sleep_hours") or 7.0), 0.1, key=f"act_sleep_{sid}")
+        notes = st.text_area("Notas livres", placeholder="Ex.: zona de dor, motivo de fadiga, treino adaptado, sensação geral...", key=f"act_notes_{sid}")
+
+        loads_now = get_muscle_loads(sid)
+        delta, loads_after, readiness, risk, recovery, status, explanation = _compute_activity_outcome(
+            soldier, loads_now, training_type, int(duration), int(rpe), str(focus), int(fatigue), int(soreness), int(stress), int(pain), float(sleep_hours), int(quality)
+        )
+
+        p1, p2, p3, p4 = st.columns(4, gap="large")
+        with p1: metric_card("Prontidão após atividade", f"{readiness}%", status)
+        with p2: metric_card("Risco após atividade", f"{risk}%", "estimativa atualizada")
+        with p3: metric_card("Recuperação", f"{recovery}%", "sono/fadiga/carga")
+        with p4: metric_card("Carga UA", int(duration) * int(rpe), "duração × RPE")
+        st.markdown(f'<div class="section-card"><b>Leitura automática:</b><br>{html.escape(explanation)}</div>', unsafe_allow_html=True)
+
+        submitted = st.form_submit_button("Guardar atividade e atualizar Digital Twin", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    if submitted:
+        try:
+            feedback = {
+                "fatigue_score": int(fatigue),
+                "soreness_score": int(soreness),
+                "pain_score": int(pain),
+                "stress_score": int(stress),
+                "hydration_score": int(hydration),
+                "sleep_hours": float(sleep_hours),
+                "session_quality": int(quality),
+            }
+            _save_manual_activity(profile, soldier, {
+                "activity_date": activity_date,
+                "training_type": training_type,
+                "duration": int(duration),
+                "rpe": int(rpe),
+                "focus": str(focus),
+                "type_data": type_data,
+                "feedback": feedback,
+                "notes": notes,
+                "delta": delta,
+                "loads_after": loads_after,
+                "readiness": readiness,
+                "risk": risk,
+                "recovery": recovery,
+                "status": status,
+                "explanation": explanation,
+            })
+            st.session_state[toggle_key] = False
+            # Force fresh reads from views after insert.
+            st.session_state.pop("profile", None)
+            fresh_profile = client_with_session().table("profiles").select("*").eq("id", profile.get("id")).maybe_single().execute().data
+            if fresh_profile:
+                st.session_state["profile"] = fresh_profile
+            st.success("Atividade guardada. As tabelas de treino, registo diário, prontidão e carga muscular foram atualizadas no Supabase.")
+            st.rerun()
+        except Exception as exc:
+            st.error("Não foi possível guardar a atividade.")
+            st.caption(str(exc))
 
 
 def simulate_individual_training(profile: Dict[str, Any]) -> None:
