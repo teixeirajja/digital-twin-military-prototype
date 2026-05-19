@@ -1080,7 +1080,6 @@ def render_individual_landing(soldier: Dict[str, Any], title: str = "Meu estado"
         </div>
         """, unsafe_allow_html=True)
 
-    render_manual_activity_entry(st.session_state.get("profile", {}), soldier)
 
 
 def soldiers_page(profile: Dict[str, Any]) -> None:
@@ -1440,6 +1439,9 @@ def twin_page(profile: Dict[str, Any]) -> None:
             recent = recent[[c for c in ["session_date", "session_type", "duration_min", "intensity", "focus_area"] if c in recent.columns]].head(5)
             st.markdown('<div class="info-card"><h3>Treinos recentes</h3></div>', unsafe_allow_html=True)
             st.dataframe(recent, use_container_width=True, hide_index=True)
+
+    st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
+    render_manual_activity_entry(profile, soldier)
 
 # =========================================================
 # Simulations
