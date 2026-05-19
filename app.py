@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 import html
+import base64
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -321,6 +323,79 @@ table.pretty-table {width:100%; border-collapse: collapse; font-size:.82rem;}
 .twin-badge.good {background:#dcfce7; border-color:#86efac; color:#166534;}
 .twin-badge.warn {background:#fef3c7; border-color:#fcd34d; color:#92400e;}
 .twin-badge.risk {background:#fee2e2; border-color:#fca5a5; color:#991b1b;}
+
+.twin-silhouette-card {
+    background:
+        radial-gradient(circle at 45% 8%, rgba(134,239,172,.18), transparent 28%),
+        radial-gradient(circle at 85% 20%, rgba(250,204,21,.14), transparent 24%),
+        linear-gradient(180deg, #06110b 0%, #020704 100%);
+    border: 1px solid rgba(255,248,207,.22);
+    border-radius: 24px;
+    padding: 14px;
+    box-shadow: 0 24px 60px rgba(3, 7, 18, .30);
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+.twin-silhouette-top {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding: 6px 8px 12px 8px;
+}
+.twin-silhouette-top h3 {
+    margin:0 !important;
+    color:#fff8cf !important;
+    font-size:1.02rem !important;
+    font-weight:950 !important;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+}
+.twin-model-pill {
+    display:inline-flex;
+    align-items:center;
+    padding:7px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,248,207,.20);
+    color:#fff8cf;
+    font-size:.72rem;
+    font-weight:900;
+}
+.twin-silhouette-img {
+    width:100%;
+    max-height:760px;
+    object-fit:contain;
+    display:block;
+    border-radius:18px;
+    background:#020704;
+    border:1px solid rgba(255,255,255,.07);
+}
+.twin-legend-dark {
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    margin-top:12px;
+    color:#d9e9c6;
+    font-size:.78rem;
+    font-weight:800;
+}
+.legend-dot {width:11px; height:11px; border-radius:999px; display:inline-block; margin-right:6px; vertical-align:-1px;}
+.legend-green {background:#22c55e;} .legend-yellow {background:#facc15;} .legend-red {background:#f97316;}
+.twin-zone-summary {
+    margin-top:12px;
+    border-radius:16px;
+    border:1px solid rgba(255,248,207,.18);
+    background:rgba(255,255,255,.06);
+    padding:12px 13px;
+    color:#d9e9c6;
+    font-size:.82rem;
+    line-height:1.45;
+}
+.twin-zone-summary b {color:#fff8cf;}
+
 @media (max-width: 900px) {.twin-grid {grid-template-columns: repeat(2, minmax(130px, 1fr));}}
 
 </style>
@@ -767,6 +842,64 @@ def muscle_level(value: Any) -> str:
         return "Moderado"
     return "Controlado"
 
+
+
+def _read_image_as_data_uri(path: Path) -> Optional[str]:
+    try:
+        if not path.exists():
+            return None
+        encoded = base64.b64encode(path.read_bytes()).decode("utf-8")
+        return f"data:image/png;base64,{encoded}"
+    except Exception:
+        return None
+
+
+def twin_image_asset(sex: str) -> Tuple[Optional[str], str]:
+    """Return the dashboard-ready male/female body-scan asset as a data URI."""
+    asset_dir = Path(__file__).resolve().parent / "assets"
+    is_female = str(sex).upper().strip() == "F"
+    file_name = "twin_female.png" if is_female else "twin_male.png"
+    label = "Modelo feminino" if is_female else "Modelo masculino"
+    return _read_image_as_data_uri(asset_dir / file_name), label
+
+
+def render_twin_silhouette_asset(muscle: Dict[str, Any], sex: str, info: Dict[str, Any]) -> bool:
+    """Render high-quality generated silhouette image; returns False if asset is missing."""
+    data_uri, model_label = twin_image_asset(sex)
+    if not data_uri:
+        return False
+    top_group = info.get("top", {}).get("Grupo muscular", "—")
+    top_load = int(info.get("top", {}).get("Carga", 0) or 0)
+    critical = info.get("critical", []) or []
+    attention = info.get("attention", []) or []
+    if critical:
+        zone_text = f"Zonas críticas: {', '.join(critical)}"
+    elif attention:
+        zone_text = f"Zonas em atenção: {', '.join(attention)}"
+    else:
+        zone_text = "Sem zonas musculares em carga crítica."
+    st.markdown(
+        f"""
+        <div class="twin-silhouette-card">
+            <div class="twin-silhouette-top">
+                <h3>Silhueta de carga muscular</h3>
+                <span class="twin-model-pill">{html.escape(model_label)}</span>
+            </div>
+            <img class="twin-silhouette-img" src="{data_uri}" alt="Digital Twin corporal" />
+            <div class="twin-legend-dark">
+                <span><i class="legend-dot legend-green"></i>Bom / equilibrado</span>
+                <span><i class="legend-dot legend-yellow"></i>Atenção</span>
+                <span><i class="legend-dot legend-red"></i>Risco / fadiga</span>
+            </div>
+            <div class="twin-zone-summary">
+                <b>Maior carga atual:</b> {html.escape(str(top_group))} · {top_load}%<br>
+                <b>Leitura automática:</b> {html.escape(zone_text)}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    return True
 
 def digital_twin_figure(muscle: Dict[str, Any], sex: str = "M", title: str = "Digital Twin — carga muscular") -> go.Figure:
     """Improved body-map silhouette with male/female proportions and muscle overlays."""
@@ -1424,14 +1557,16 @@ def twin_page(profile: Dict[str, Any]) -> None:
     with c4:
         metric_card("Recuperação", _fmt_pct(recovery), "sono/fadiga/carga")
 
-    left, right = st.columns([1.02, 1.05])
+    left, right = st.columns([1.12, 1.0])
     with left:
-        st.markdown('<div class="twin-panel"><h3>Silhueta de carga muscular</h3>', unsafe_allow_html=True)
         if muscle:
-            st.plotly_chart(digital_twin_figure(muscle, sex=str(soldier.get("sex", "M")), title="Mapa corporal de carga"), use_container_width=True)
+            rendered_asset = render_twin_silhouette_asset(muscle, sex=str(soldier.get("sex", "M")), info=info)
+            if not rendered_asset:
+                st.markdown('<div class="twin-panel"><h3>Silhueta de carga muscular</h3>', unsafe_allow_html=True)
+                st.plotly_chart(digital_twin_figure(muscle, sex=str(soldier.get("sex", "M")), title="Mapa corporal de carga"), use_container_width=True)
+                st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Sem dados de carga muscular para este militar.")
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with right:
         if not muscle_chart.empty:
