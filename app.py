@@ -1064,33 +1064,88 @@ def soldier_page(profile: Dict[str, Any], forced_soldier_id: Optional[str] = Non
         render_commander_soldier_summary(soldier, latest, dlatest, tlatest, recs)
         return soldier_id
 
+    # Individual landing page: simple, useful first view for the soldier.
+    status = str(latest.get("status", "Atenção"))
+    readiness_score = latest.get("readiness_score", "—")
+    injury_risk = latest.get("injury_risk", "—")
+    recovery_score = latest.get("recovery_score", "—")
+    availability = _availability_text(status, injury_risk, readiness_score)
+
+    try:
+        risk_text = _risk_band(injury_risk)
+    except Exception:
+        risk_text = "Sem dados"
+
+    try:
+        fatigue_text = f"{int(round(float(dlatest.get('fatigue_score'))))}/10"
+    except Exception:
+        fatigue_text = "—"
+
+    try:
+        sleep_text = f"{float(dlatest.get('sleep_hours')):.1f} h"
+    except Exception:
+        sleep_text = "—"
+
+    cooper_text = f"{tlatest.get('cooper_m', '—')} m" if tlatest else "—"
+
+    if not recs.empty:
+        r = recs.iloc[0]
+        rec_title = f"{r.get('priority', '')} · {r.get('title', '')}".strip(" ·")
+        rec_message = str(r.get("message", ""))
+        rec_date = str(r.get("rec_date", ""))
+    else:
+        rec_title = "Sem recomendações críticas"
+        rec_message = "Mantém o plano normal e regista o feedback após o treino."
+        rec_date = ""
+
     c1, c2, c3, c4 = st.columns(4)
-    with c1: metric_card("Prontidão", f"{latest.get('readiness_score', '—')}%", latest.get("status", "sem estado"))
-    with c2: metric_card("Risco de lesão", f"{latest.get('injury_risk', '—')}%", "estimativa atual")
-    with c3: metric_card("Recuperação", f"{latest.get('recovery_score', '—')}%", "sono/fadiga/carga")
-    with c4: metric_card("Cooper", f"{tlatest.get('cooper_m', '—')} m", "último teste")
+    with c1:
+        metric_card("Prontidão", f"{readiness_score}%", status)
+    with c2:
+        metric_card("Treino de hoje", availability, "decisão rápida")
+    with c3:
+        metric_card("Recuperação", f"{recovery_score}%", "sono/fadiga/carga")
+    with c4:
+        metric_card("Cooper", cooper_text, "último teste")
 
     st.divider()
-    p1, p2 = st.columns([1.2, 1])
-    with p1:
-        if not readiness.empty:
-            trend = readiness.sort_values("score_date")
-            fig = px.line(trend, x="score_date", y=["readiness_score", "injury_risk", "recovery_score"], markers=True,
-                          labels={"value": "Score", "score_date": "Data", "variable": "Métrica"}, title="Evolução do estado físico")
-            fig = apply_chart_style(fig, height=430)
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("Sem histórico de prontidão.")
-    with p2:
-        st.markdown("#### Recomendação atual")
-        if not recs.empty:
-            for _, r in recs.head(4).iterrows():
-                st.markdown(f"**{r['priority']} · {r['title']}**")
-                st.write(r["message"])
-                st.caption(f"{r['category']} · {r['rec_date']}")
-                st.divider()
-        else:
-            st.success("Sem recomendações críticas.")
+
+    left, right = st.columns([1.05, 1])
+    with left:
+        bands_html = (
+            _bar_html("Prontidão", readiness_score, "good")
+            + _bar_html("Risco", injury_risk, "risk")
+            + _bar_html("Recuperação", recovery_score, "good")
+        )
+        quick_html = (
+            '<div class="info-card">'
+            '<h3>Resumo rápido</h3>'
+            '<div class="band-list">' + bands_html + '</div>'
+            '<div class="action-box" style="margin-top:14px;">'
+            f'<b>Risco atual:</b> <span>{html.escape(risk_text)}</span><br>'
+            f'<b>Fadiga reportada:</b> <span>{html.escape(fatigue_text)}</span><br>'
+            f'<b>Sono:</b> <span>{html.escape(sleep_text)}</span>'
+            '</div>'
+            '</div>'
+        )
+        st.markdown(quick_html, unsafe_allow_html=True)
+
+    with right:
+        today_html = (
+            '<div class="info-card">'
+            '<h3>O que fazer agora</h3>'
+            f'<div class="action-box"><b>{html.escape(rec_title)}</b><br><span>{html.escape(rec_message)}</span></div>'
+            '<div class="action-box">'
+            f'<b>Estado para planeamento:</b><br><span>{html.escape(availability)}</span>'
+            '</div>'
+            '<div class="action-box">'
+            '<b>Próximo passo:</b><br><span>Usa as abas Digital Twin e Simular treino apenas se quiseres ver detalhe ou testar uma sessão.</span>'
+            '</div>'
+            '</div>'
+        )
+        st.markdown(today_html, unsafe_allow_html=True)
+        if rec_date:
+            st.caption(f"Última atualização: {rec_date}")
 
     return soldier_id
 
