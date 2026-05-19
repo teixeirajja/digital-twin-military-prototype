@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import math
 import uuid
+import textwrap
 from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -65,10 +66,12 @@ hr {border-color: rgba(20,83,45,.13) !important;}
 }
 .stSlider label, .stSelectbox label, .stTextInput label, .stCheckbox label, .stRadio label {font-weight: 800 !important; color: #243623 !important; font-size: .84rem !important;}
 .stButton > button, .stFormSubmitButton > button {
-  border-radius: 12px !important; border: 1px solid rgba(20,83,45,.25) !important; background: #fff !important;
+  border-radius: 14px !important; border: 1px solid rgba(20,83,45,.25) !important; background: #fff !important;
   color: var(--g700) !important; font-weight: 900 !important; min-height: 42px; box-shadow: 0 8px 22px rgba(16,32,21,.07) !important;
 }
 .stButton > button:hover, .stFormSubmitButton > button:hover {background: var(--g700) !important; color: #fff !important;}
+[data-testid="stBaseButton-primary"] {background:linear-gradient(135deg,var(--g800),var(--g600)) !important; color:#fff8cf !important; border-color:var(--g700) !important;}
+[data-testid="stBaseButton-secondary"] {background:#fff !important; color:var(--g800) !important;}
 
 /* Login */
 .login-shell {max-width: 980px; margin: 6vh auto 0 auto;}
@@ -94,6 +97,7 @@ hr {border-color: rgba(20,83,45,.13) !important;}
 /* Radio navigation */
 .nav-label {margin: 18px 0 8px 4px; color: var(--g800); font-size:.78rem; font-weight:950; text-transform:uppercase; letter-spacing:.06em;}
 [data-testid="stRadio"] {width:100% !important; max-width:100% !important; margin-bottom:12px !important;}
+[data-testid="stRadio"] > div {width:100% !important; max-width:100% !important;}
 [data-testid="stRadio"] > label {display:none !important;}
 [data-testid="stRadio"] div[role="radiogroup"] {display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; gap:12px !important; background:rgba(255,255,255,.72) !important; border:1px solid var(--line) !important; border-radius:999px !important; padding:8px !important; width:100% !important; max-width:100% !important; box-shadow:0 10px 28px rgba(16,32,21,.07) !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label {display:flex !important; align-items:center !important; justify-content:center !important; flex:1 1 0 !important; min-width:0 !important; min-height:46px !important; padding:0 18px !important; border-radius:999px !important; border:1px solid rgba(20,83,45,.18) !important; background:#fff !important; color:var(--g800) !important; box-shadow:0 5px 14px rgba(16,32,21,.05) !important; cursor:pointer !important; font-weight:950 !important; text-align:center !important;}
@@ -102,13 +106,13 @@ hr {border-color: rgba(20,83,45,.13) !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label p {color:inherit !important; font-size:.94rem !important; font-weight:950 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;}
 .header-context {margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,248,207,.18); color:#fff8cf !important; font-size:.98rem !important; font-weight:950 !important; letter-spacing:.05em; text-transform:none;}
 
-.section-card {background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:var(--shadow); margin-bottom:16px;}
+.section-card {background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:var(--shadow); margin-bottom:22px;}
 .section-title {background:#fff; border:1px solid var(--line); border-left:6px solid var(--g700); border-radius:14px; padding:16px 18px; font-size:1.1rem; font-weight:950; color:var(--ink); letter-spacing:.05em; margin:10px 0 16px;}
-.metric-card {background:#fff; border:1px solid var(--line); border-left:5px solid var(--g700); border-radius:16px; padding:17px 18px; box-shadow:var(--shadow); min-height:128px;}
+.metric-card {background:#fff; border:1px solid var(--line); border-left:5px solid var(--g700); border-radius:16px; padding:18px 19px; box-shadow:var(--shadow); min-height:132px; margin-bottom:20px;}
 .metric-card small {display:block; text-transform:uppercase; color:var(--g700); font-weight:950; letter-spacing:.06em; margin-bottom:12px;}
 .metric-card h2 {margin:0 0 9px; font-size:1.86rem; color:var(--ink) !important; font-weight:950;}
 .metric-card p {margin:0; color:var(--muted); font-weight:700; font-size:.86rem;}
-.info-card {background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:var(--shadow);}
+.info-card {background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:var(--shadow); margin-bottom:22px;}
 .info-card h3 {margin:0 0 12px; font-size:1.1rem; color:var(--ink) !important;}
 .info-row {display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid rgba(20,83,45,.10); color:#243623;}
 .info-row b {color:var(--ink);}
@@ -121,7 +125,7 @@ hr {border-color: rgba(20,83,45,.13) !important;}
 
 .bar-wrap {height:8px; width:100%; border-radius:999px; background:#dfe8d9; overflow:hidden; border:1px solid rgba(20,83,45,.12);}
 .bar-fill {display:block; height:100%; border-radius:999px;}
-.table-shell {border-radius:18px; overflow:hidden; border:1px solid var(--line); background:#fff; box-shadow:var(--shadow); margin:18px 0;}
+.table-shell {border-radius:18px; overflow:hidden; border:1px solid var(--line); background:#fff; box-shadow:var(--shadow); margin:28px 0;}
 .table-title {background:var(--g900); color:#fff8cf; padding:14px 16px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center;}
 table.op-table {border-collapse:collapse; width:100%; font-size:.88rem;}
 table.op-table th {background:#eef2e6; color:var(--ink); text-align:left; padding:13px 12px; border-bottom:1px solid var(--line);}
@@ -137,6 +141,7 @@ table.op-table tr:nth-child(even) td {background:#fafbf5;}
 .legend-dot {display:inline-block; width:11px; height:11px; border-radius:99px; margin-right:7px; vertical-align:middle;}
 .svg-note {color:#b8c9aa; font-size:.78rem; margin-top:10px;}
 
+.streamlit-expanderHeader {font-weight:900 !important;}
 @media(max-width:900px){.block-container{padding-left:1rem!important; padding-right:1rem!important}.main-header{flex-direction:column; align-items:flex-start}.metric-card{min-height:110px}}
 </style>
 """
@@ -522,6 +527,69 @@ def get_muscle_loads(soldier_id: str) -> Dict[str, int]:
     defaults.update({k: int(v) for k, v in loads.items() if k in MUSCLE_LABELS})
     return defaults
 
+
+
+# =========================================================
+# Hierarchy labels and ordering
+# =========================================================
+def _first_number(value: Any, default: int = 99) -> int:
+    import re
+    m = re.search(r"\d+", safe(value, ""))
+    return int(m.group(0)) if m else default
+
+
+def enrich_hierarchy_columns(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return df
+    out = df.copy()
+    if "platoon_name" not in out.columns:
+        out["platoon_name"] = ""
+    if "section_name" not in out.columns:
+        out["section_name"] = ""
+    out["platoon_order"] = out["platoon_name"].apply(lambda x: _first_number(x, 99))
+    out["section_order"] = out["section_name"].apply(lambda x: _first_number(x, 0 if safe(x, "") in {"", "—"} else 99))
+    out["section_full_label"] = out.apply(
+        lambda r: f"{safe(r.get('platoon_name'))} · {safe(r.get('section_name'))}" if safe(r.get('section_name'), '') not in {'', '—'} else safe(r.get('platoon_name')),
+        axis=1,
+    )
+    out["rank_order"] = out.get("rank_code", pd.Series([""] * len(out))).map({"CAP": 0, "TEN": 1, "1SARG": 2, "2SARG": 3, "FUR": 4, "1CAB": 5, "2CAB": 6, "SOLD": 7}).fillna(99).astype(int)
+    out["commander_sort"] = out.get("is_commander", pd.Series([False] * len(out))).apply(lambda x: 0 if bool(x) else 1)
+    # Tenentes comandantes ficam antes das secções; comandantes de secção ficam antes dos respetivos militares.
+    out.loc[out.get("rank_code", "") == "TEN", "section_order"] = -1
+    return out
+
+
+def sort_operational(df: pd.DataFrame) -> pd.DataFrame:
+    out = enrich_hierarchy_columns(df)
+    if out.empty:
+        return out
+    sort_cols = [c for c in ["platoon_order", "section_order", "commander_sort", "rank_order", "full_name"] if c in out.columns]
+    return out.sort_values(sort_cols, ascending=True).copy()
+
+
+def section_options_for(df: pd.DataFrame, selected_platoon: str) -> List[str]:
+    dff = df.copy()
+    if selected_platoon != "Todos" and "platoon_name" in dff:
+        dff = dff[dff["platoon_name"] == selected_platoon]
+    dff = enrich_hierarchy_columns(dff)
+    if selected_platoon == "Todos":
+        vals = [x for x in dff.get("section_full_label", pd.Series(dtype=str)).dropna().unique().tolist() if x and x != "—"]
+    else:
+        vals = [x for x in dff.get("section_name", pd.Series(dtype=str)).dropna().unique().tolist() if x and x != "—"]
+    return ["Todas"] + sorted(vals, key=lambda x: (_first_number(x, 99), x))
+
+
+def apply_section_filter(df: pd.DataFrame, selected_platoon: str, selected_section: str) -> pd.DataFrame:
+    out = enrich_hierarchy_columns(df)
+    if selected_platoon != "Todos" and "platoon_name" in out:
+        out = out[out["platoon_name"] == selected_platoon]
+    if selected_section != "Todas":
+        if selected_platoon == "Todos":
+            out = out[out["section_full_label"] == selected_section]
+        else:
+            out = out[out["section_name"] == selected_section]
+    return out
+
 # =========================================================
 # Top bar and navigation
 # =========================================================
@@ -552,37 +620,45 @@ def context_title(profile: Dict[str, Any], mode: str, page: str) -> str:
     return f"{page} · {who}"
 
 
+def nav_button_grid(label: str, options: List[str], selected: str, key_prefix: str) -> str:
+    """Wide, stable navigation using Streamlit buttons instead of radio links."""
+    st.markdown(f'<div class="nav-label">{html.escape(label)}</div>', unsafe_allow_html=True)
+    cols = st.columns(len(options), gap="large")
+    chosen = selected if selected in options else options[0]
+    for i, option in enumerate(options):
+        with cols[i]:
+            if st.button(option, key=f"{key_prefix}_{i}_{option}", use_container_width=True, type="primary" if option == chosen else "secondary"):
+                chosen = option
+                if key_prefix == "mode_btn":
+                    st.session_state["mode"] = "command" if option == "Modo comandante" else "individual"
+                    st.session_state.pop("page", None)
+                else:
+                    st.session_state["page"] = option
+                st.rerun()
+    return chosen
+
+
 def top_bar(profile: Dict[str, Any]) -> str:
     role = profile_role(profile)
     role_label = ROLE_LABELS.get(role, role)
 
-    # Ler primeiro o estado atual dos widgets para a bolha verde já mostrar o contexto correto.
     if is_command_role(profile):
-        raw_mode = st.session_state.get("mode_radio")
-        if raw_mode in {"Modo comandante", "Modo individual"}:
-            mode = "command" if raw_mode == "Modo comandante" else "individual"
-        else:
-            mode = current_mode(profile)
-        st.session_state["mode"] = mode
-        if mode == "command":
-            pages = ["Dashboard", "Militares", "Simular treino"]
-            if role == "admin":
-                pages.append("Admin")
-        else:
-            pages = ["Meu perfil", "Digital Twin", "Simular treino"]
+        mode = current_mode(profile)
     else:
         mode = "individual"
         st.session_state["mode"] = "individual"
+
+    if mode == "command" and is_command_role(profile):
+        pages = ["Dashboard", "Militares", "Simular treino"]
+        if role == "admin":
+            pages.append("Admin")
+    else:
         pages = ["Meu perfil", "Digital Twin", "Simular treino"]
 
-    if st.session_state.get("nav_radio") not in pages:
-        st.session_state.pop("nav_radio", None)
-    default = st.session_state.get("page") if st.session_state.get("page") in pages else pages[0]
-    current_page = st.session_state.get("nav_radio") if st.session_state.get("nav_radio") in pages else default
+    current_page = st.session_state.get("page") if st.session_state.get("page") in pages else pages[0]
     st.session_state["page"] = current_page
-
-    # Logout link inside the green header. It is handled at the start of main().
     active_context = context_title(profile, mode, current_page)
+
     st.markdown(f"""
     <div class="main-header">
       <div>
@@ -595,17 +671,9 @@ def top_bar(profile: Dict[str, Any]) -> str:
     """, unsafe_allow_html=True)
 
     if is_command_role(profile):
-        st.markdown('<div class="nav-label">Escolher modo</div>', unsafe_allow_html=True)
-        mode_labels = ["Modo comandante", "Modo individual"]
-        default_mode = "Modo comandante" if mode == "command" else "Modo individual"
-        selected_mode = st.radio(
-            "Modo de utilização",
-            mode_labels,
-            index=mode_labels.index(default_mode),
-            horizontal=True,
-            key="mode_radio",
-        )
-        mode = "command" if selected_mode == "Modo comandante" else "individual"
+        selected_mode_label = "Modo comandante" if mode == "command" else "Modo individual"
+        selected_mode_label = nav_button_grid("Escolher modo", ["Modo comandante", "Modo individual"], selected_mode_label, "mode_btn")
+        mode = "command" if selected_mode_label == "Modo comandante" else "individual"
         st.session_state["mode"] = mode
         if mode == "command":
             pages = ["Dashboard", "Militares", "Simular treino"]
@@ -617,11 +685,9 @@ def top_bar(profile: Dict[str, Any]) -> str:
         st.session_state["mode"] = "individual"
         pages = ["Meu perfil", "Digital Twin", "Simular treino"]
 
-    st.markdown('<div class="nav-label">Secções disponíveis</div>', unsafe_allow_html=True)
-    if st.session_state.get("nav_radio") not in pages:
-        st.session_state.pop("nav_radio", None)
-    default = st.session_state.get("page") if st.session_state.get("page") in pages else pages[0]
-    selected = st.radio("Navegação", pages, index=pages.index(default), horizontal=True, key="nav_radio")
+    if st.session_state.get("page") not in pages:
+        st.session_state["page"] = pages[0]
+    selected = nav_button_grid("Secções disponíveis", pages, st.session_state["page"], "page_btn")
     st.session_state["page"] = selected
     return selected
 
@@ -631,28 +697,25 @@ def top_bar(profile: Dict[str, Any]) -> str:
 def filter_snapshot(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
+    df = enrich_hierarchy_columns(df)
     st.markdown('<div class="section-title">Filtros operacionais</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns([1.1, 1.1, 1.2, 1.0])
-    platoons = ["Todos"] + sorted([x for x in df.get("platoon_name", pd.Series(dtype=str)).dropna().unique().tolist()])
-    sections = ["Todas"] + sorted([x for x in df.get("section_name", pd.Series(dtype=str)).dropna().unique().tolist()])
+    c1, c2, c3, c4 = st.columns([1.1, 1.1, 1.2, 1.0], gap="large")
+    platoons = ["Todos"] + sorted([x for x in df.get("platoon_name", pd.Series(dtype=str)).dropna().unique().tolist() if x], key=lambda x: (_first_number(x), x))
     with c1:
-        platoon = st.selectbox("Pelotão", platoons)
+        platoon = st.selectbox("Pelotão", platoons, key="dash_filter_platoon")
     with c2:
-        section = st.selectbox("Secção", sections)
+        sections = section_options_for(df, platoon)
+        section = st.selectbox("Secção", sections, key="dash_filter_section")
     with c3:
-        statuses = st.multiselect("Estado", STATUS_ORDER, default=STATUS_ORDER)
+        statuses = st.multiselect("Estado", STATUS_ORDER, default=STATUS_ORDER, key="dash_filter_status")
     with c4:
-        min_ready = st.slider("Prontidão mínima", 0, 100, 0)
-    out = df.copy()
-    if platoon != "Todos" and "platoon_name" in out:
-        out = out[out["platoon_name"] == platoon]
-    if section != "Todas" and "section_name" in out:
-        out = out[out["section_name"] == section]
+        min_ready = st.slider("Prontidão mínima", 0, 100, 0, key="dash_filter_ready")
+    out = apply_section_filter(df, platoon, section)
     if statuses and "readiness_status" in out:
         out = out[out["readiness_status"].isin(statuses)]
     if "readiness_score" in out:
         out = out[out["readiness_score"].fillna(0) >= min_ready]
-    return out
+    return sort_operational(out)
 
 
 def render_metrics(df: pd.DataFrame) -> None:
@@ -661,7 +724,7 @@ def render_metrics(df: pd.DataFrame) -> None:
     attention = int((df["readiness_status"] == "Atenção").sum()) if not df.empty else 0
     risk = int((df["readiness_status"] == "Risco").sum()) if not df.empty else 0
     avg = int(round(df["readiness_score"].dropna().mean())) if not df.empty and "readiness_score" in df else 0
-    c1, c2, c3, c4, c5 = st.columns(5)
+    c1, c2, c3, c4, c5 = st.columns(5, gap="large")
     with c1: metric_card("Militares analisados", total, command_scope_label(st.session_state["profile"]))
     with c2: metric_card("Prontos", ready, "prontidão ≥ 75")
     with c3: metric_card("Atenção", attention, "55 ≤ prontidão < 75")
@@ -673,7 +736,7 @@ def render_charts(df: pd.DataFrame) -> None:
     if df.empty:
         st.info("Sem dados para visualizar neste filtro.")
         return
-    left, right = st.columns([1.1, 1])
+    left, right = st.columns([1.1, 1], gap="large")
     colors = {"Pronto": "#22c55e", "Atenção": "#f59e0b", "Risco": "#ef4444"}
     with left:
         chart_df = df.sort_values("readiness_score", ascending=True).tail(20)
@@ -683,11 +746,12 @@ def render_charts(df: pd.DataFrame) -> None:
         fig = px.scatter(df, x="readiness_score", y="injury_risk", size="recovery_score", color="readiness_status", color_discrete_map=colors, hover_name="full_name", labels={"readiness_score":"Prontidão", "injury_risk":"Risco de lesão", "readiness_status":"Estado"}, title="Prontidão vs risco")
         st.plotly_chart(apply_chart_style(fig, 440), use_container_width=True)
 
-    group_col = "section_name" if "section_name" in df and df["section_name"].notna().any() else "platoon_name"
-    if group_col in df:
-        g = df.groupby([group_col, "readiness_status"]).size().reset_index(name="militares")
+    df_group = enrich_hierarchy_columns(df)
+    group_col = "section_full_label" if "section_full_label" in df_group and df_group["section_full_label"].notna().any() else "platoon_name"
+    if group_col in df_group:
+        g = df_group.groupby([group_col, "readiness_status"]).size().reset_index(name="militares")
         fig = px.bar(g, x=group_col, y="militares", color="readiness_status", color_discrete_map=colors, title="Estado por subunidade", labels={group_col:"Subunidade", "militares":"Militares", "readiness_status":"Estado"})
-        st.plotly_chart(apply_chart_style(fig, 360), use_container_width=True)
+        st.plotly_chart(apply_chart_style(fig, 380), use_container_width=True)
 
 
 def operational_table(df: pd.DataFrame, title: str = "Tabela operacional") -> None:
@@ -695,34 +759,32 @@ def operational_table(df: pd.DataFrame, title: str = "Tabela operacional") -> No
         st.info("Sem militares para mostrar neste filtro.")
         return
     rows = []
-    cols = ["rank_code", "full_name", "platoon_name", "section_name", "readiness_status", "readiness_score", "injury_risk", "recovery_score", "cooper_m", "fatigue_score", "sleep_hours"]
-    view = df[[c for c in cols if c in df.columns]].copy().sort_values(["readiness_status", "readiness_score"], ascending=[True, False])
+    cols = ["rank_code", "full_name", "platoon_name", "section_name", "readiness_status", "readiness_score", "injury_risk", "recovery_score", "cooper_m", "fatigue_score", "sleep_hours", "is_commander", "military_number"]
+    view = sort_operational(df[[c for c in cols if c in df.columns]].copy())
     for _, r in view.iterrows():
         status = safe(r.get("readiness_status"), "Atenção")
         rows.append(f"""
-        <tr>
-          <td class="rank-cell">{html.escape(safe(r.get('rank_code')))}</td>
-          <td class="name-cell">{html.escape(safe(r.get('full_name')))}</td>
-          <td>{html.escape(safe(r.get('platoon_name')))}</td>
-          <td>{html.escape(safe(r.get('section_name')))}</td>
-          <td><span class="status-pill {status_class(status)}">{html.escape(status)}</span></td>
-          <td>{progress_html(r.get('readiness_score'))}</td>
-          <td>{progress_html(r.get('injury_risk'), inverse=True)}</td>
-          <td>{progress_html(r.get('recovery_score'))}</td>
-          <td>{html.escape(safe(r.get('cooper_m')))} m</td>
-          <td>{progress_html(r.get('fatigue_score'), inverse=True, label=f"{n(r.get('fatigue_score'))}/10")}</td>
-          <td>{html.escape(safe(r.get('sleep_hours')))} h</td>
-        </tr>
-        """)
-    st.markdown(f"""
-    <div class="table-shell">
-      <div class="table-title"><span>{html.escape(title)}</span><span>{len(view)} militar(es)</span></div>
-      <table class="op-table">
-        <thead><tr><th>Posto</th><th>Militar</th><th>Pelotão</th><th>Secção</th><th>Estado</th><th>Prontidão</th><th>Risco</th><th>Recuperação</th><th>Cooper</th><th>Fadiga</th><th>Sono</th></tr></thead>
-        <tbody>{''.join(rows)}</tbody>
-      </table>
-    </div>
-    """, unsafe_allow_html=True)
+<tr>
+  <td class="rank-cell">{html.escape(safe(r.get('rank_code')))}</td>
+  <td class="name-cell">{html.escape(safe(r.get('full_name')))}</td>
+  <td>{html.escape(safe(r.get('platoon_name')))}</td>
+  <td>{html.escape(safe(r.get('section_name')))}</td>
+  <td><span class="status-pill {status_class(status)}">{html.escape(status)}</span></td>
+  <td>{progress_html(r.get('readiness_score'))}</td>
+  <td>{progress_html(r.get('injury_risk'), inverse=True)}</td>
+  <td>{progress_html(r.get('recovery_score'))}</td>
+  <td>{html.escape(safe(r.get('cooper_m')))} m</td>
+  <td>{progress_html(r.get('fatigue_score'), inverse=True, label=f"{n(r.get('fatigue_score'))}/10")}</td>
+  <td>{html.escape(safe(r.get('sleep_hours')))} h</td>
+</tr>""")
+    table_html = f"""<div class="table-shell">
+<div class="table-title"><span>{html.escape(title)}</span><span>{len(view)} militar(es)</span></div>
+<table class="op-table">
+<thead><tr><th>Posto</th><th>Militar</th><th>Pelotão</th><th>Secção</th><th>Estado</th><th>Prontidão</th><th>Risco</th><th>Recuperação</th><th>Cooper</th><th>Fadiga</th><th>Sono</th></tr></thead>
+<tbody>{''.join(rows)}</tbody>
+</table>
+</div>"""
+    st.markdown(table_html, unsafe_allow_html=True)
 
 
 def commander_dashboard(profile: Dict[str, Any]) -> None:
@@ -741,13 +803,13 @@ def render_individual_landing(soldier: Dict[str, Any], title: str = "Meu estado"
     if not soldier:
         st.warning("Perfil individual não encontrado para este utilizador.")
         return
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4, gap="large")
     status = safe(soldier.get("readiness_status"), "Atenção")
     with c1: metric_card("Prontidão", pct(soldier.get("readiness_score")), status)
     with c2: metric_card("Risco operacional", "Baixo" if n(soldier.get("injury_risk")) < 35 else "Moderado" if n(soldier.get("injury_risk")) < 60 else "Elevado", f"{pct(soldier.get('injury_risk'))}")
     with c3: metric_card("Recuperação", pct(soldier.get("recovery_score")), "sono / fadiga / carga")
     with c4: metric_card("Cooper", f"{n(soldier.get('cooper_m'))} m", "último teste")
-    left, right = st.columns([1.05, .95])
+    left, right = st.columns([1.05, .95], gap="large")
     with left:
         st.markdown('<div class="info-card"><h3>Resumo rápido</h3>' +
                     info_row("Prontidão", pct(soldier.get("readiness_score"))) +
@@ -780,22 +842,20 @@ def soldiers_page(profile: Dict[str, Any]) -> None:
     if df.empty:
         st.info("Sem militares acessíveis.")
         return
+    df = enrich_hierarchy_columns(df)
     st.markdown('<div class="section-title">Militares acessíveis</div>', unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 1, 2])
+    c1, c2, c3 = st.columns([1, 1, 2], gap="large")
     with c1:
-        platoons = ["Todos"] + sorted([x for x in df.get("platoon_name", pd.Series(dtype=str)).dropna().unique().tolist()])
+        platoons = ["Todos"] + sorted([x for x in df.get("platoon_name", pd.Series(dtype=str)).dropna().unique().tolist() if x], key=lambda x: (_first_number(x), x))
         platoon = st.selectbox("Filtrar pelotão", platoons, key="soldier_filter_platoon")
     with c2:
-        dff = df if platoon == "Todos" else df[df["platoon_name"] == platoon]
-        sections = ["Todas"] + sorted([x for x in dff.get("section_name", pd.Series(dtype=str)).dropna().unique().tolist()])
+        sections = section_options_for(df, platoon)
         section = st.selectbox("Filtrar secção", sections, key="soldier_filter_section")
-    dff = df.copy()
-    if platoon != "Todos": dff = dff[dff["platoon_name"] == platoon]
-    if section != "Todas": dff = dff[dff["section_name"] == section]
+    dff = sort_operational(apply_section_filter(df, platoon, section))
     with c3:
         choices = [f"{r.rank_code} {r.full_name}" for r in dff.itertuples()]
-        selected = st.selectbox("Selecionar militar", choices)
-    row = dff.iloc[choices.index(selected)].to_dict() if choices else None
+        selected = st.selectbox("Selecionar militar", choices, key="soldier_selected") if choices else None
+    row = dff.iloc[choices.index(selected)].to_dict() if selected and choices else None
     if row:
         render_commander_authorized_summary(row)
     operational_table(dff, "Militares filtrados")
@@ -803,7 +863,7 @@ def soldiers_page(profile: Dict[str, Any]) -> None:
 
 def render_commander_authorized_summary(soldier: Dict[str, Any]) -> None:
     st.markdown(f'<div class="section-title">{html.escape(safe(soldier.get("rank_code")))} {html.escape(safe(soldier.get("full_name")))}</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4, gap="large")
     risk = n(soldier.get("injury_risk"))
     readiness = n(soldier.get("readiness_score"))
     recovery = n(soldier.get("recovery_score"))
@@ -812,7 +872,7 @@ def render_commander_authorized_summary(soldier: Dict[str, Any]) -> None:
     with c2: metric_card("Risco operacional", "Baixo" if risk < 35 else "Moderado" if risk < 60 else "Elevado", f"{risk}%")
     with c3: metric_card("Disponibilidade", "Apto" if status == "Pronto" else "Condicionado" if status == "Atenção" else "Não recomendado", "para planeamento")
     with c4: metric_card("Cooper", f"{n(soldier.get('cooper_m'))} m", "último teste")
-    left, right = st.columns([1, 1])
+    left, right = st.columns([1, 1], gap="large")
     with left:
         st.markdown('<div class="info-card"><h3>Resumo operacional autorizado</h3>' +
                     info_row("Pelotão", safe(soldier.get("platoon_name"))) +
@@ -839,96 +899,106 @@ def svg_style_fill(loads: Dict[str, int], key: str, opacity: float = .86) -> str
 
 
 def twin_svg(loads: Dict[str, int], sex: str) -> str:
-    # Smooth vector silhouette: front and back views with independent muscle zones.
-    is_female = str(sex).upper().startswith("F")
-    title = "Silhueta feminina" if is_female else "Silhueta masculina"
-    # geometry tweaks
-    torso_w = 70 if is_female else 82
-    hip_w = 76 if is_female else 68
-    shoulder_y = 112
-    head_r = 22 if is_female else 24
-    front_x, back_x = 205, 535
-    bg = "#031008"
-    # Helper to build one view.
-    def base_person(cx: int, back: bool = False) -> str:
-        # base dark body layers
+    """Professional-looking dynamic SVG twin.
+
+    It is fully vectorial: highlighted zones are colored from the selected
+    soldier's muscle-load data. The base silhouette is constant per sex.
+    """
+    female = str(sex).upper().startswith("F")
+    title = "Silhueta feminina" if female else "Silhueta masculina"
+
+    def zone(key: str, op: float = .82) -> str:
+        return f'fill="{color_for_load(loads.get(key, 0))}" fill-opacity="{op}" stroke="#e8f2dc" stroke-opacity=".42" stroke-width="1.15" filter="url(#softGlow)"'
+
+    def base_front(cx: int, scale: float = 1.0) -> str:
+        waist = 28 if female else 34
+        shoulder = 60 if female else 70
+        hip = 45 if female else 40
         return f'''
-        <g transform="translate({cx},0)">
-          <circle cx="0" cy="58" r="{head_r}" fill="#1a211d" stroke="#6f7f66" stroke-opacity=".45"/>
-          <path d="M -12 82 Q 0 98 12 82 L 17 105 L -17 105 Z" fill="#1a211d" stroke="#6f7f66" stroke-opacity=".35"/>
-          <path d="M {-torso_w/2} 118 Q {-torso_w/2-8} 190 {-hip_w/2} 248 L {hip_w/2} 248 Q {torso_w/2+8} 190 {torso_w/2} 118 Q 0 100 {-torso_w/2} 118" fill="#111b15" stroke="#6f7f66" stroke-opacity=".35"/>
-          <path d="M {-hip_w/2} 248 Q -18 270 -14 310 L -20 405 Q -19 455 -10 505 L -42 505 Q -55 455 -51 405 L -48 318 Q -55 278 {-hip_w/2} 248" fill="#111b15" stroke="#6f7f66" stroke-opacity=".35"/>
-          <path d="M {hip_w/2} 248 Q 18 270 14 310 L 20 405 Q 19 455 10 505 L 42 505 Q 55 455 51 405 L 48 318 Q 55 278 {hip_w/2} 248" fill="#111b15" stroke="#6f7f66" stroke-opacity=".35"/>
-          <path d="M {-torso_w/2} 124 Q -92 140 -94 205 L -102 315 Q -100 345 -84 360 L -66 360 Q -72 320 -70 270 L -63 175 Q -58 140 {-torso_w/2} 124" fill="#111b15" stroke="#6f7f66" stroke-opacity=".35"/>
-          <path d="M {torso_w/2} 124 Q 92 140 94 205 L 102 315 Q 100 345 84 360 L 66 360 Q 72 320 70 270 L 63 175 Q 58 140 {torso_w/2} 124" fill="#111b15" stroke="#6f7f66" stroke-opacity=".35"/>
+        <g transform="translate({cx},44) scale({scale})">
+          <ellipse cx="0" cy="38" rx="26" ry="32" fill="#161d18" stroke="#dce8d1" stroke-opacity=".28"/>
+          <path d="M-18 68 Q0 82 18 68 L22 92 Q0 104 -22 92Z" fill="#161d18" stroke="#dce8d1" stroke-opacity=".22"/>
+          <path d="M {-shoulder} 122 Q -38 92 0 96 Q 38 92 {shoulder} 122 Q 44 176 {waist} 252 Q 18 280 0 282 Q -18 280 {-waist} 252 Q -44 176 {-shoulder} 122Z" fill="#172019" stroke="#dce8d1" stroke-opacity=".30"/>
+          <path d="M {-hip} 270 Q -18 250 0 276 Q 18 250 {hip} 270 Q 40 316 36 388 Q 22 398 8 388 Q 8 330 0 296 Q -8 330 -8 388 Q -22 398 -36 388 Q -40 316 {-hip} 270Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
+          <path d="M {-shoulder-6} 128 Q {-shoulder-31} 150 {-shoulder-34} 198 L {-shoulder-28} 292 Q {-shoulder-15} 306 {-shoulder-2} 292 L {-shoulder+3} 194 Q {-shoulder+4} 154 {-shoulder-6} 128Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
+          <path d="M {shoulder+6} 128 Q {shoulder+31} 150 {shoulder+34} 198 L {shoulder+28} 292 Q {shoulder+15} 306 {shoulder+2} 292 L {shoulder-3} 194 Q {shoulder-4} 154 {shoulder+6} 128Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
+          <path d="M -28 390 Q -16 400 -14 510 L -39 510 Q -47 430 -38 396 Q -34 390 -28 390Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".22"/>
+          <path d="M 28 390 Q 16 400 14 510 L 39 510 Q 47 430 38 396 Q 34 390 28 390Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".22"/>
         </g>'''
-    def front_zones(cx: int) -> str:
-        chest = svg_style_fill(loads, "chest")
-        shoulders = svg_style_fill(loads, "shoulders")
-        arms = svg_style_fill(loads, "arms")
-        core = svg_style_fill(loads, "core")
-        quads = svg_style_fill(loads, "quads")
-        calves = svg_style_fill(loads, "calves")
+
+    def base_back(cx: int, scale: float = 1.0) -> str:
+        waist = 30 if female else 36
+        shoulder = 60 if female else 70
+        hip = 46 if female else 42
         return f'''
-        <g transform="translate({cx},0)">
-          <ellipse cx="{-torso_w/2-17}" cy="142" rx="24" ry="42" {shoulders}/>
-          <ellipse cx="{torso_w/2+17}" cy="142" rx="24" ry="42" {shoulders}/>
-          <path d="M -92 178 Q -72 170 -65 205 L -70 292 Q -84 300 -99 292 L -96 205 Q -96 190 -92 178" {arms}/>
-          <path d="M 92 178 Q 72 170 65 205 L 70 292 Q 84 300 99 292 L 96 205 Q 96 190 92 178" {arms}/>
-          <path d="M -35 128 Q -6 116 -2 158 Q -18 176 -43 170 Q -50 145 -35 128" {chest}/>
-          <path d="M 35 128 Q 6 116 2 158 Q 18 176 43 170 Q 50 145 35 128" {chest}/>
-          <path d="M -28 176 L 28 176 Q 31 218 20 244 L -20 244 Q -31 218 -28 176" {core}/>
-          <line x1="0" y1="180" x2="0" y2="242" stroke="#061006" stroke-opacity=".45" stroke-width="2"/>
-          <line x1="-25" y1="198" x2="25" y2="198" stroke="#061006" stroke-opacity=".35"/>
-          <line x1="-24" y1="220" x2="24" y2="220" stroke="#061006" stroke-opacity=".35"/>
-          <path d="M -42 258 Q -18 272 -18 330 L -25 398 Q -44 404 -57 394 L -53 315 Q -56 280 -42 258" {quads}/>
-          <path d="M 42 258 Q 18 272 18 330 L 25 398 Q 44 404 57 394 L 53 315 Q 56 280 42 258" {quads}/>
-          <path d="M -31 405 Q -18 415 -14 500 L -40 500 Q -51 432 -45 410 Q -39 404 -31 405" {calves}/>
-          <path d="M 31 405 Q 18 415 14 500 L 40 500 Q 51 432 45 410 Q 39 404 31 405" {calves}/>
+        <g transform="translate({cx},44) scale({scale})">
+          <ellipse cx="0" cy="38" rx="25" ry="31" fill="#161d18" stroke="#dce8d1" stroke-opacity=".28"/>
+          <path d="M-18 68 Q0 82 18 68 L22 92 Q0 104 -22 92Z" fill="#161d18" stroke="#dce8d1" stroke-opacity=".22"/>
+          <path d="M {-shoulder} 122 Q -34 96 0 98 Q 34 96 {shoulder} 122 Q 44 178 {waist} 252 Q 18 280 0 282 Q -18 280 {-waist} 252 Q -44 178 {-shoulder} 122Z" fill="#172019" stroke="#dce8d1" stroke-opacity=".30"/>
+          <path d="M {-hip} 270 Q -18 250 0 276 Q 18 250 {hip} 270 Q 40 316 36 388 Q 22 398 8 388 Q 8 330 0 296 Q -8 330 -8 388 Q -22 398 -36 388 Q -40 316 {-hip} 270Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
+          <path d="M {-shoulder-6} 128 Q {-shoulder-31} 150 {-shoulder-34} 198 L {-shoulder-28} 292 Q {-shoulder-15} 306 {-shoulder-2} 292 L {-shoulder+3} 194 Q {-shoulder+4} 154 {-shoulder-6} 128Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
+          <path d="M {shoulder+6} 128 Q {shoulder+31} 150 {shoulder+34} 198 L {shoulder+28} 292 Q {shoulder+15} 306 {shoulder+2} 292 L {shoulder-3} 194 Q {shoulder-4} 154 {shoulder+6} 128Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
+          <path d="M -28 390 Q -16 400 -14 510 L -39 510 Q -47 430 -38 396 Q -34 390 -28 390Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".22"/>
+          <path d="M 28 390 Q 16 400 14 510 L 39 510 Q 47 430 38 396 Q 34 390 28 390Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".22"/>
         </g>'''
-    def back_zones(cx: int) -> str:
-        backc = svg_style_fill(loads, "back")
-        shoulders = svg_style_fill(loads, "shoulders")
-        arms = svg_style_fill(loads, "arms")
-        glutes = svg_style_fill(loads, "glutes")
-        hams = svg_style_fill(loads, "hamstrings")
-        calves = svg_style_fill(loads, "calves")
+
+    def front_muscles(cx: int, scale: float = 1.0) -> str:
+        chest = zone("chest"); shoulders = zone("shoulders"); arms = zone("arms"); core = zone("core"); quads = zone("quads"); calves = zone("calves")
         return f'''
-        <g transform="translate({cx},0)">
-          <ellipse cx="{-torso_w/2-17}" cy="142" rx="24" ry="42" {shoulders}/>
-          <ellipse cx="{torso_w/2+17}" cy="142" rx="24" ry="42" {shoulders}/>
-          <path d="M -92 178 Q -72 170 -65 205 L -70 292 Q -84 300 -99 292 L -96 205 Q -96 190 -92 178" {arms}/>
-          <path d="M 92 178 Q 72 170 65 205 L 70 292 Q 84 300 99 292 L 96 205 Q 96 190 92 178" {arms}/>
-          <path d="M -44 125 Q -18 118 0 145 L 0 235 Q -34 214 -48 170 Q -52 146 -44 125" {backc}/>
-          <path d="M 44 125 Q 18 118 0 145 L 0 235 Q 34 214 48 170 Q 52 146 44 125" {backc}/>
-          <line x1="0" y1="116" x2="0" y2="250" stroke="#dbe9cf" stroke-opacity=".32" stroke-width="2"/>
-          <path d="M -38 252 Q -6 235 -2 280 Q -16 302 -44 292 Q -54 270 -38 252" {glutes}/>
-          <path d="M 38 252 Q 6 235 2 280 Q 16 302 44 292 Q 54 270 38 252" {glutes}/>
-          <path d="M -45 302 Q -20 310 -20 392 Q -38 404 -55 394 Q -56 330 -45 302" {hams}/>
-          <path d="M 45 302 Q 20 310 20 392 Q 38 404 55 394 Q 56 330 45 302" {hams}/>
-          <path d="M -31 405 Q -18 415 -14 500 L -40 500 Q -51 432 -45 410 Q -39 404 -31 405" {calves}/>
-          <path d="M 31 405 Q 18 415 14 500 L 40 500 Q 51 432 45 410 Q 39 404 31 405" {calves}/>
+        <g transform="translate({cx},44) scale({scale})">
+          <path d="M-61 126 Q-46 101 -20 108 Q-25 145 -54 158 Q-66 148 -61 126Z" {shoulders}/>
+          <path d="M61 126 Q46 101 20 108 Q25 145 54 158 Q66 148 61 126Z" {shoulders}/>
+          <path d="M-56 158 Q-78 176 -76 223 L-73 288 Q-60 296 -48 286 L-45 198 Q-44 172 -56 158Z" {arms}/>
+          <path d="M56 158 Q78 176 76 223 L73 288 Q60 296 48 286 L45 198 Q44 172 56 158Z" {arms}/>
+          <path d="M-41 118 Q-7 102 -2 151 Q-20 172 -50 157 Q-50 132 -41 118Z" {chest}/>
+          <path d="M41 118 Q7 102 2 151 Q20 172 50 157 Q50 132 41 118Z" {chest}/>
+          <path d="M-25 168 Q0 156 25 168 L24 246 Q0 264 -24 246Z" {core}/>
+          <line x1="0" y1="166" x2="0" y2="250" stroke="#07170e" stroke-opacity=".42" stroke-width="2"/>
+          <path d="M-41 282 Q-12 274 -10 384 Q-25 399 -42 388 Q-52 322 -41 282Z" {quads}/>
+          <path d="M41 282 Q12 274 10 384 Q25 399 42 388 Q52 322 41 282Z" {quads}/>
+          <path d="M-29 398 Q-17 410 -16 504 L-39 504 Q-46 430 -38 402 Q-34 396 -29 398Z" {calves}/>
+          <path d="M29 398 Q17 410 16 504 L39 504 Q46 430 38 402 Q34 396 29 398Z" {calves}/>
         </g>'''
+
+    def back_muscles(cx: int, scale: float = 1.0) -> str:
+        back = zone("back"); shoulders = zone("shoulders"); arms = zone("arms"); glutes = zone("glutes"); hams = zone("hamstrings"); calves = zone("calves")
+        return f'''
+        <g transform="translate({cx},44) scale({scale})">
+          <path d="M-62 126 Q-46 101 -18 108 Q-25 145 -54 160 Q-67 149 -62 126Z" {shoulders}/>
+          <path d="M62 126 Q46 101 18 108 Q25 145 54 160 Q67 149 62 126Z" {shoulders}/>
+          <path d="M-56 158 Q-78 176 -76 223 L-73 288 Q-60 296 -48 286 L-45 198 Q-44 172 -56 158Z" {arms}/>
+          <path d="M56 158 Q78 176 76 223 L73 288 Q60 296 48 286 L45 198 Q44 172 56 158Z" {arms}/>
+          <path d="M-44 118 Q-16 105 0 132 L0 242 Q-32 222 -48 172 Q-54 140 -44 118Z" {back}/>
+          <path d="M44 118 Q16 105 0 132 L0 242 Q32 222 48 172 Q54 140 44 118Z" {back}/>
+          <line x1="0" y1="110" x2="0" y2="256" stroke="#dbe9cf" stroke-opacity=".25" stroke-width="2"/>
+          <path d="M-40 258 Q-8 240 -2 282 Q-18 309 -45 296 Q-56 274 -40 258Z" {glutes}/>
+          <path d="M40 258 Q8 240 2 282 Q18 309 45 296 Q56 274 40 258Z" {glutes}/>
+          <path d="M-42 302 Q-16 310 -13 386 Q-28 399 -43 388 Q-54 328 -42 302Z" {hams}/>
+          <path d="M42 302 Q16 310 13 386 Q28 399 43 388 Q54 328 42 302Z" {hams}/>
+          <path d="M-29 398 Q-17 410 -16 504 L-39 504 Q-46 430 -38 402 Q-34 396 -29 398Z" {calves}/>
+          <path d="M29 398 Q17 410 16 504 L39 504 Q46 430 38 402 Q34 396 29 398Z" {calves}/>
+        </g>'''
+
     return f'''
-    <svg viewBox="0 0 820 590" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Digital twin muscular dinâmico">
+    <svg viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Digital twin muscular dinâmico">
       <defs>
-        <radialGradient id="halo" cx="50%" cy="20%" r="80%"><stop offset="0%" stop-color="#15351f"/><stop offset="100%" stop-color="{bg}"/></radialGradient>
-        <filter id="glow"><feGaussianBlur stdDeviation="2.1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M 30 0 L 0 0 0 30" fill="none" stroke="#c7d9bf" stroke-opacity=".05" stroke-width="1"/></pattern>
+        <radialGradient id="bgTwin" cx="50%" cy="25%" r="85%"><stop offset="0%" stop-color="#16351f"/><stop offset="100%" stop-color="#031008"/></radialGradient>
+        <filter id="softGlow"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#fff8cf" flood-opacity=".12"/></filter>
+        <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0 L0 0 0 28" fill="none" stroke="#dbe9cf" stroke-opacity=".045" stroke-width="1"/></pattern>
       </defs>
-      <rect width="820" height="590" rx="22" fill="url(#halo)"/>
-      <rect width="820" height="590" rx="22" fill="url(#grid)"/>
-      <circle cx="205" cy="270" r="180" fill="none" stroke="#c7d9bf" stroke-opacity=".08"/>
-      <circle cx="535" cy="270" r="180" fill="none" stroke="#c7d9bf" stroke-opacity=".08"/>
-      <text x="34" y="45" fill="#fff8cf" font-size="22" font-weight="900" letter-spacing="4">DIGITAL TWIN</text>
-      <text x="34" y="72" fill="#b8c9aa" font-size="13" font-weight="700">{html.escape(title)} · carga muscular dinâmica</text>
-      {base_person(front_x)}{front_zones(front_x)}
-      {base_person(back_x, True)}{back_zones(back_x)}
-      <g transform="translate(85,540)">
-        <circle cx="0" cy="0" r="7" fill="#22c55e"/><text x="15" y="5" fill="#dbe9cf" font-size="12">Controlado</text>
-        <circle cx="130" cy="0" r="7" fill="#d7b92f"/><text x="145" y="5" fill="#dbe9cf" font-size="12">Atenção</text>
-        <circle cx="250" cy="0" r="7" fill="#f59e0b"/><text x="265" y="5" fill="#dbe9cf" font-size="12">Elevado</text>
-        <circle cx="360" cy="0" r="7" fill="#ef4444"/><text x="375" y="5" fill="#dbe9cf" font-size="12">Crítico</text>
+      <rect width="900" height="620" rx="24" fill="url(#bgTwin)"/>
+      <rect width="900" height="620" rx="24" fill="url(#grid)"/>
+      <text x="34" y="48" fill="#fff8cf" font-size="25" font-weight="950" letter-spacing="5">DIGITAL TWIN</text>
+      <text x="34" y="77" fill="#b8c9aa" font-size="14" font-weight="700">{html.escape(title)} · coloração muscular dinâmica</text>
+      <circle cx="260" cy="320" r="208" fill="none" stroke="#dbe9cf" stroke-opacity=".07"/>
+      <circle cx="620" cy="320" r="208" fill="none" stroke="#dbe9cf" stroke-opacity=".07"/>
+      {base_front(260)}{front_muscles(260)}
+      {base_back(620)}{back_muscles(620)}
+      <g transform="translate(110,575)">
+        <circle cx="0" cy="0" r="7" fill="#22c55e"/><text x="16" y="5" fill="#dbe9cf" font-size="13">Controlado</text>
+        <circle cx="135" cy="0" r="7" fill="#d7b92f"/><text x="151" y="5" fill="#dbe9cf" font-size="13">Atenção</text>
+        <circle cx="260" cy="0" r="7" fill="#f59e0b"/><text x="276" y="5" fill="#dbe9cf" font-size="13">Elevado</text>
+        <circle cx="370" cy="0" r="7" fill="#ef4444"/><text x="386" y="5" fill="#dbe9cf" font-size="13">Crítico</text>
       </g>
     </svg>
     '''
@@ -948,7 +1018,7 @@ def twin_page(profile: Dict[str, Any]) -> None:
         st.warning("Este utilizador ainda não tem soldier_id associado no perfil.")
         return
     loads = get_muscle_loads(str(soldier.get("soldier_id")))
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4, gap="large")
     avg_load = int(round(sum(loads.values()) / max(1, len(loads))))
     top_group = max(loads, key=loads.get)
     with c1: metric_card("Prontidão", pct(soldier.get("readiness_score")), safe(soldier.get("readiness_status")))
@@ -956,7 +1026,7 @@ def twin_page(profile: Dict[str, Any]) -> None:
     with c3: metric_card("Risco", "Baixo" if n(soldier.get("injury_risk")) < 35 else "Moderado" if n(soldier.get("injury_risk")) < 60 else "Elevado", pct(soldier.get("injury_risk")))
     with c4: metric_card("Recuperação", pct(soldier.get("recovery_score")), "sono / fadiga / carga")
 
-    left, right = st.columns([1.18, .92])
+    left, right = st.columns([1.18, .92], gap="large")
     with left:
         render_dynamic_twin(soldier, loads)
     with right:
@@ -1000,14 +1070,14 @@ def decision_for(readiness: int, risk: int) -> str:
 def training_parameters(training_type: str) -> Tuple[Dict[str, Any], int, int, str]:
     params: Dict[str, Any] = {"training_type": training_type}
     if training_type == "Corrida contínua":
-        c1, c2, c3 = st.columns(3)
+        c1, c2, c3 = st.columns(3, gap="large")
         with c1: duration = st.slider("Duração", 20, 90, 45)
         with c2: intensity = st.slider("Intensidade", 1, 10, 6)
         with c3: pace = st.selectbox("Zona de ritmo", ["Leve", "Moderada", "Forte"])
         params.update({"duration": duration, "intensity": intensity, "pace_zone": pace})
         focus = "Pernas"
     elif training_type == "Corrida intervalada":
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4 = st.columns(4, gap="large")
         with c1: reps = st.slider("Repetições", 4, 12, 8)
         with c2: dist = st.selectbox("Distância", [200, 400, 800, 1000], index=1)
         with c3: rec = st.slider("Recuperação (s)", 30, 180, 90)
@@ -1016,7 +1086,7 @@ def training_parameters(training_type: str) -> Tuple[Dict[str, Any], int, int, s
         params.update({"repetitions": reps, "distance_m": dist, "recovery_s": rec, "intensity": intensity})
         focus = "Pernas"
     elif training_type == "Marcha com carga":
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4 = st.columns(4, gap="large")
         with c1: duration = st.slider("Duração", 30, 180, 90)
         with c2: load = st.slider("Carga externa (kg)", 5, 35, 18)
         with c3: terrain = st.selectbox("Terreno", ["Plano", "Misto", "Inclinado"])
@@ -1024,21 +1094,21 @@ def training_parameters(training_type: str) -> Tuple[Dict[str, Any], int, int, s
         params.update({"duration": duration, "external_load_kg": load, "terrain": terrain, "intensity": intensity})
         focus = "Pernas/Core"
     elif training_type == "Circuito de força":
-        c1, c2, c3 = st.columns(3)
+        c1, c2, c3 = st.columns(3, gap="large")
         with c1: rounds = st.slider("Rondas", 2, 8, 4)
         with c2: intensity = st.slider("Intensidade", 1, 10, 7)
         with c3: focus = st.selectbox("Foco", ["Full body", "Superior", "Inferior", "Core"])
         duration = rounds * 12
         params.update({"rounds": rounds, "intensity": intensity, "focus": focus})
     elif training_type == "Treino técnico-tático":
-        c1, c2, c3 = st.columns(3)
+        c1, c2, c3 = st.columns(3, gap="large")
         with c1: duration = st.slider("Duração", 30, 180, 75)
         with c2: intensity = st.slider("Intensidade", 1, 10, 6)
         with c3: scenario = st.selectbox("Cenário", ["Patrulha", "Progressão", "Combate aproximado", "Reconhecimento"])
         params.update({"duration": duration, "intensity": intensity, "scenario": scenario})
         focus = "Operacional"
     else:
-        c1, c2 = st.columns(2)
+        c1, c2 = st.columns(2, gap="large")
         with c1: duration = st.slider("Duração", 15, 60, 30)
         with c2: intensity = st.slider("Intensidade", 1, 5, 2)
         modality = st.selectbox("Modalidade", ["Bicicleta leve", "Mobilidade", "Caminhada", "Natação leve"])
@@ -1048,13 +1118,15 @@ def training_parameters(training_type: str) -> Tuple[Dict[str, Any], int, int, s
 
 
 def accessible_groups(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
+    df = enrich_hierarchy_columns(df)
     groups = {"Todo o escalão acessível": df}
     if "platoon_name" in df:
-        for name in sorted(df["platoon_name"].dropna().unique().tolist()):
+        for name in sorted(df["platoon_name"].dropna().unique().tolist(), key=lambda x: (_first_number(x), x)):
             groups[f"Pelotão · {name}"] = df[df["platoon_name"] == name]
-    if "section_name" in df:
-        for name in sorted(df["section_name"].dropna().unique().tolist()):
-            groups[f"Secção · {name}"] = df[df["section_name"] == name]
+    if "section_full_label" in df:
+        for name in sorted(df["section_full_label"].dropna().unique().tolist(), key=lambda x: (_first_number(x), x)):
+            if name and name != "—":
+                groups[f"Secção · {name}"] = df[df["section_full_label"] == name]
     return groups
 
 
@@ -1087,7 +1159,7 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
             "Decisão": decision_for(predicted_readiness, predicted_risk),
         })
     sim = pd.DataFrame(rows).sort_values(["Decisão", "Risco previsto"], ascending=[True, False])
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4, gap="large")
     with c1: metric_card("Prontidão média atual", f"{int(round(group_df['readiness_score'].mean()))}%", selected_group)
     with c2: metric_card("Prontidão média prevista", f"{int(round(sim['Prontidão prevista'].mean()))}%", "após treino")
     with c3: metric_card("Militares a adaptar", int((sim["Decisão"] != "Executa").sum()), "Monitorizar ou Retirar/Adaptar")
@@ -1118,23 +1190,110 @@ def simulate_group_training(profile: Dict[str, Any]) -> None:
             st.caption(str(exc))
 
 
+def muscle_delta_for_training(training_type: str, intensity: int, duration: int, focus: str) -> Dict[str, int]:
+    base = max(2, int(round(intensity * 1.25 + duration / 22)))
+    delta = {k: 0 for k in MUSCLE_LABELS}
+    if training_type in {"Corrida contínua", "Corrida intervalada"}:
+        mult = 1.35 if training_type == "Corrida intervalada" else 1.0
+        delta.update({"quads": int(base * mult), "hamstrings": int(base * 1.05 * mult), "calves": int(base * 1.1 * mult), "glutes": int(base * .75 * mult), "core": int(base * .45)})
+    elif training_type == "Marcha com carga":
+        delta.update({"quads": base + 8, "hamstrings": base + 6, "calves": base + 5, "glutes": base + 7, "core": base + 5, "back": base + 3, "shoulders": base + 2})
+    elif training_type == "Circuito de força":
+        if focus == "Superior":
+            delta.update({"chest": base + 6, "back": base + 5, "shoulders": base + 5, "arms": base + 6, "core": base + 2})
+        elif focus == "Inferior":
+            delta.update({"quads": base + 7, "hamstrings": base + 6, "glutes": base + 6, "calves": base + 3, "core": base + 2})
+        elif focus == "Core":
+            delta.update({"core": base + 8, "back": base + 3, "glutes": base + 2})
+        else:
+            delta.update({k: base for k in MUSCLE_LABELS})
+    elif training_type == "Treino técnico-tático":
+        delta.update({"quads": base, "hamstrings": base, "calves": base - 1, "glutes": base - 1, "core": base, "back": base - 1, "shoulders": base - 1})
+    else:  # recuperação ativa
+        delta = {k: -max(2, int(base / 2)) for k in MUSCLE_LABELS}
+    return {k: int(v) for k, v in delta.items()}
+
+
+def update_loads(loads: Dict[str, int], delta: Dict[str, int]) -> Dict[str, int]:
+    return {k: max(0, min(100, n(loads.get(k)) + int(delta.get(k, 0)))) for k in MUSCLE_LABELS}
+
+
 def simulate_individual_training(profile: Dict[str, Any]) -> None:
     soldier = get_profile_soldier(profile)
     if not soldier:
         st.warning("Perfil individual não encontrado.")
         return
-    training_type = st.selectbox("Tipo de treino", ["Corrida contínua", "Corrida intervalada", "Marcha com carga", "Circuito de força", "Treino técnico-tático", "Recuperação ativa"])
-    params, duration, intensity, focus = training_parameters(training_type)
+
+    st.markdown('<div class="section-title">Simulador individual de treino</div>', unsafe_allow_html=True)
+    left_cfg, right_cfg = st.columns([1.05, .95], gap="large")
+    with left_cfg:
+        training_type = st.selectbox("Tipo de treino", ["Corrida contínua", "Corrida intervalada", "Marcha com carga", "Circuito de força", "Treino técnico-tático", "Recuperação ativa"])
+        params, duration, intensity, focus = training_parameters(training_type)
+    with right_cfg:
+        st.markdown('<div class="info-card"><h3>Objetivo da simulação</h3>' +
+                    info_row("Pergunta", "Compensa fazer este treino agora?") +
+                    info_row("Base", "prontidão, risco, fadiga, recuperação e carga muscular") +
+                    info_row("Resultado", "decisão + impacto no Digital Twin") +
+                    "</div>", unsafe_allow_html=True)
+
+    loads_now = get_muscle_loads(str(soldier.get("soldier_id")))
+    delta = muscle_delta_for_training(training_type, intensity, duration, str(focus))
+    loads_pred = update_loads(loads_now, delta)
+
     impact = int(round(intensity * 2.1 + duration / 10))
-    recovery_bonus = 10 if training_type == "Recuperação ativa" else 0
+    fatigue = n(soldier.get("fatigue_score"), 4)
+    recovery = n(soldier.get("recovery_score"), 60)
+    recovery_bonus = 12 if training_type == "Recuperação ativa" else 0
+    fatigue_penalty = max(0, fatigue - 5) * 2
+    recovery_penalty = max(0, 55 - recovery) // 5
+    muscle_penalty = max(0, max(loads_pred.values()) - 70) // 4
+
     base_ready = n(soldier.get("readiness_score"), 60)
     base_risk = n(soldier.get("injury_risk"), 35)
-    predicted_readiness = max(0, min(100, base_ready - impact + recovery_bonus))
-    predicted_risk = max(0, min(100, base_risk + int(impact * .75) - recovery_bonus))
-    c1, c2, c3 = st.columns(3)
+    predicted_readiness = max(0, min(100, base_ready - impact - fatigue_penalty - recovery_penalty - muscle_penalty + recovery_bonus))
+    predicted_risk = max(0, min(100, base_risk + int(impact * .70) + muscle_penalty * 2 - recovery_bonus))
+    decision = decision_for(predicted_readiness, predicted_risk)
+    benefit = "Alto" if training_type == "Recuperação ativa" or (predicted_risk < 55 and predicted_readiness >= 60) else "Moderado" if decision == "Monitorizar" else "Baixo"
+
+    c1, c2, c3, c4 = st.columns(4, gap="large")
     with c1: metric_card("Prontidão atual", f"{base_ready}%", safe(soldier.get("readiness_status")))
-    with c2: metric_card("Prontidão prevista", f"{predicted_readiness}%", "após treino")
-    with c3: metric_card("Risco previsto", f"{predicted_risk}%", decision_for(predicted_readiness, predicted_risk))
+    with c2: metric_card("Prontidão prevista", f"{predicted_readiness}%", f"impacto {predicted_readiness - base_ready} p.p.")
+    with c3: metric_card("Risco previsto", f"{predicted_risk}%", decision)
+    with c4: metric_card("Benefício estimado", benefit, f"foco: {focus}")
+
+    lcol, rcol = st.columns([1.08, .92], gap="large")
+    with lcol:
+        render_dynamic_twin(soldier, loads_pred)
+    with rcol:
+        impact_rows = []
+        for k in MUSCLE_LABELS:
+            impact_rows.append({
+                "Grupo": MUSCLE_LABELS[k],
+                "Atual": loads_now.get(k, 0),
+                "Após treino": loads_pred.get(k, 0),
+                "Impacto": loads_pred.get(k, 0) - loads_now.get(k, 0),
+                "Estado previsto": load_label(loads_pred.get(k, 0)),
+            })
+        impact_df = pd.DataFrame(impact_rows).sort_values("Após treino", ascending=False)
+        fig = px.bar(impact_df.sort_values("Após treino"), x="Após treino", y="Grupo", orientation="h", color="Estado previsto", color_discrete_map={"Controlado":"#22c55e", "Atenção":"#d7b92f", "Elevado":"#f59e0b", "Crítico":"#ef4444"}, title="Impacto previsto no Digital Twin", text="Após treino")
+        fig.update_traces(texttemplate="%{text}%", textposition="outside")
+        st.plotly_chart(apply_chart_style(fig, 420), use_container_width=True)
+        top_after = impact_df.iloc[0]
+        if decision == "Executa":
+            action = "Treino recomendado. Mantém recolha de feedback pós-sessão."
+        elif decision == "Monitorizar":
+            action = "Treino possível, mas reduz volume/intensidade ou controla de perto a resposta."
+        else:
+            action = "Não recomendado sem adaptação. Prioriza recuperação ou treino alternativo."
+        st.markdown('<div class="info-card"><h3>Decisão do simulador</h3>' +
+                    info_row("Decisão", decision) +
+                    info_row("Zona mais afetada", f"{top_after['Grupo']} · {int(top_after['Após treino'])}%") +
+                    info_row("Ação", action) +
+                    "</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">Detalhe por grupo muscular</div>', unsafe_allow_html=True)
+    st.dataframe(impact_df, use_container_width=True, hide_index=True)
+
     if st.button("Guardar simulação individual", use_container_width=True):
         try:
             sb_insert_many("training_simulations", [{
@@ -1144,11 +1303,11 @@ def simulate_individual_training(profile: Dict[str, Any]) -> None:
                 "training_type": training_type,
                 "duration_min": duration,
                 "intensity": intensity,
-                "parameters": params,
+                "parameters": {**params, "muscle_delta": delta, "predicted_muscle_loads": loads_pred},
                 "predicted_readiness": predicted_readiness,
                 "predicted_injury_risk": predicted_risk,
-                "decision": decision_for(predicted_readiness, predicted_risk),
-                "notes": f"Simulação individual; foco: {focus}",
+                "decision": decision,
+                "notes": f"Simulação individual; foco: {focus}; benefício: {benefit}",
             }])
             st.success("Simulação individual guardada.")
         except Exception as exc:
