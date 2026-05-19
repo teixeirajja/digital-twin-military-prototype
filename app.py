@@ -516,13 +516,86 @@ def command_scope_label(profile: Dict[str, Any]) -> str:
     return "Individual"
 
 
-def accessible_snapshot(exclude_own: bool = False, profile: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
-    """Reads current accessible force snapshot. RLS should restrict by logged-in user.
+def _command_scope_units(profile: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Return the org units explicitly commanded by the logged-in profile."""
+    if not profile:
+        return []
+    try:
+        assignments = sb_select("command_assignments", filters=[("profile_id", "eq", profile.get("id"))])
+    except Exception:
+        assignments = []
+    if not assignments:
+        return []
+    unit_ids = [a.get("org_unit_id") for a in assignments if a.get("org_unit_id")]
+    if not unit_ids:
+        return []
+    try:
+        return sb_select("org_units", filters=[("id", "in", unit_ids)])
+    except Exception:
+        return []
 
-    In command mode, exclude the logged-in commander's own soldier row so that
-    command dashboards/lists represent the force under command, while the
-    commander's individual data stays in Meu perfil/Digital Twin.
+
+def _apply_profile_scope(df: pd.DataFrame, profile: Optional[Dict[str, Any]]) -> pd.DataFrame:
+    """App-side scope guard.
+
+    DB/RLS remains the real security layer, but this prevents command dashboards
+    from showing too much if a view is temporarily too permissive.
+    Rules:
+      - CAP/company_commander: full company.
+      - TEN/platoon_commander: only his platoon.
+      - 1SARG/section_commander: only his section.
+      - soldier: own row only.
     """
+    if df.empty or not profile:
+        return df
+    role = profile_role(profile)
+    out = df.copy()
+
+    if role in {"admin", "company_commander"}:
+        return out
+
+    if role == "soldier":
+        sid = profile.get("soldier_id")
+        if sid and "soldier_id" in out.columns:
+            return out[out["soldier_id"].astype(str) == str(sid)].copy()
+        return out.iloc[0:0].copy()
+
+    scope_units = _command_scope_units(profile)
+
+    if role == "platoon_commander":
+        platoon_names = [safe(u.get("name"), "") for u in scope_units if safe(u.get("unit_type"), "") == "platoon"]
+        if not platoon_names and profile.get("platoon_id"):
+            try:
+                u = sb_select("org_units", filters=[("id", "eq", profile.get("platoon_id"))], limit=1)
+                platoon_names = [safe(u[0].get("name"), "")] if u else []
+            except Exception:
+                platoon_names = []
+        if platoon_names and "platoon_name" in out.columns:
+            return out[out["platoon_name"].isin(platoon_names)].copy()
+        return out.iloc[0:0].copy()
+
+    if role == "section_commander":
+        section_names = [safe(u.get("name"), "") for u in scope_units if safe(u.get("unit_type"), "") == "section"]
+        if section_names and "section_name" in out.columns:
+            scoped = out[out["section_name"].isin(section_names)].copy()
+            # If possible, also constrain by platoon to avoid mixing equal section names from different platoons.
+            parent_ids = [u.get("parent_id") for u in scope_units if u.get("parent_id")]
+            if parent_ids and "platoon_name" in scoped.columns:
+                try:
+                    parents = sb_select("org_units", filters=[("id", "in", parent_ids)])
+                    pnames = [safe(p.get("name"), "") for p in parents]
+                    if pnames:
+                        scoped = scoped[scoped["platoon_name"].isin(pnames)].copy()
+                except Exception:
+                    pass
+            return scoped
+        return out.iloc[0:0].copy()
+
+    return out
+
+
+def accessible_snapshot(exclude_own: bool = False, profile: Optional[Dict[str, Any]] = None) -> pd.DataFrame:
+    """Reads current accessible force snapshot and enforces command scope in app."""
     try:
         df = pd.DataFrame(sb_select("company_dashboard_current", order="full_name"))
     except Exception as exc:
@@ -531,6 +604,10 @@ def accessible_snapshot(exclude_own: bool = False, profile: Optional[Dict[str, A
         return pd.DataFrame()
     if df.empty:
         return df
+
+    # Explicit app-side guard: CAP sees company; TEN sees own platoon; 1SARG sees own section.
+    df = _apply_profile_scope(df, profile)
+
     if exclude_own and profile and profile.get("soldier_id") and "soldier_id" in df.columns:
         df = df[df["soldier_id"].astype(str) != str(profile.get("soldier_id"))].copy()
     for col in ["readiness_score", "injury_risk", "recovery_score", "sleep_hours", "fatigue_score", "soreness_score", "cooper_m", "pushups", "situps", "pullups", "plank_sec"]:
