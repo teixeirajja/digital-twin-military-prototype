@@ -102,6 +102,9 @@ hr {border-color: rgba(20,83,45,.13) !important;}
 [data-testid="stRadio"] div[role="radiogroup"] {display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; gap:12px !important; background:rgba(255,255,255,.72) !important; border:1px solid var(--line) !important; border-radius:999px !important; padding:8px !important; width:100% !important; max-width:100% !important; box-shadow:0 10px 28px rgba(16,32,21,.07) !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label {display:flex !important; align-items:center !important; justify-content:center !important; flex:1 1 0 !important; min-width:0 !important; min-height:46px !important; padding:0 18px !important; border-radius:999px !important; border:1px solid rgba(20,83,45,.18) !important; background:#fff !important; color:var(--g800) !important; box-shadow:0 5px 14px rgba(16,32,21,.05) !important; cursor:pointer !important; font-weight:950 !important; text-align:center !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {background:linear-gradient(135deg, var(--g800), var(--g600)) !important; color:#fff8cf !important; border-color:var(--g600) !important;}
+[data-testid="stRadio"] div[role="radiogroup"] label[data-checked="true"],
+[data-testid="stRadio"] div[role="radiogroup"] label:has([aria-checked="true"]),
+[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {background:linear-gradient(135deg, var(--g800), var(--g600)) !important; color:#fff8cf !important; border-color:var(--g600) !important; box-shadow:0 10px 24px rgba(20,83,45,.23) !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label input, [data-testid="stRadio"] div[role="radiogroup"] label > div:first-child {display:none !important;}
 [data-testid="stRadio"] div[role="radiogroup"] label p {color:inherit !important; font-size:.94rem !important; font-weight:950 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;}
 .header-context {margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,248,207,.18); color:#fff8cf !important; font-size:.98rem !important; font-weight:950 !important; letter-spacing:.05em; text-transform:none;}
@@ -621,22 +624,24 @@ def context_title(profile: Dict[str, Any], mode: str, page: str) -> str:
 
 
 def nav_button_grid(label: str, options: List[str], selected: str, key_prefix: str) -> str:
-    """Wide, stable navigation using Streamlit buttons instead of radio links."""
+    """Wide navigation with real active state."""
     st.markdown(f'<div class="nav-label">{html.escape(label)}</div>', unsafe_allow_html=True)
-    cols = st.columns(len(options), gap="large")
-    chosen = selected if selected in options else options[0]
-    for i, option in enumerate(options):
-        with cols[i]:
-            if st.button(option, key=f"{key_prefix}_{i}_{option}", use_container_width=True, type="primary" if option == chosen else "secondary"):
-                chosen = option
-                if key_prefix == "mode_btn":
-                    st.session_state["mode"] = "command" if option == "Modo comandante" else "individual"
-                    st.session_state.pop("page", None)
-                else:
-                    st.session_state["page"] = option
-                st.rerun()
+    if not options:
+        return selected
+    selected = selected if selected in options else options[0]
+    radio_key = f"{key_prefix}_radio"
+    if radio_key not in st.session_state or st.session_state[radio_key] not in options:
+        st.session_state[radio_key] = selected
+    chosen = st.radio(label, options, horizontal=True, label_visibility="collapsed", key=radio_key)
+    if chosen != selected:
+        if key_prefix == "mode_btn":
+            st.session_state["mode"] = "command" if chosen == "Modo comandante" else "individual"
+            st.session_state.pop("page", None)
+            st.session_state.pop("page_btn_radio", None)
+        else:
+            st.session_state["page"] = chosen
+        st.rerun()
     return chosen
-
 
 def top_bar(profile: Dict[str, Any]) -> str:
     role = profile_role(profile)
@@ -899,116 +904,118 @@ def svg_style_fill(loads: Dict[str, int], key: str, opacity: float = .86) -> str
 
 
 def twin_svg(loads: Dict[str, int], sex: str) -> str:
-    """Professional-looking dynamic SVG twin.
+    """Dynamic anatomical SVG twin.
 
-    It is fully vectorial: highlighted zones are colored from the selected
-    soldier's muscle-load data. The base silhouette is constant per sex.
+    One male base and one female base. Each muscle zone is a separate SVG
+    shape and its colour is calculated from the current soldier's muscle load.
     """
     female = str(sex).upper().startswith("F")
     title = "Silhueta feminina" if female else "Silhueta masculina"
 
-    def zone(key: str, op: float = .82) -> str:
-        return f'fill="{color_for_load(loads.get(key, 0))}" fill-opacity="{op}" stroke="#e8f2dc" stroke-opacity=".42" stroke-width="1.15" filter="url(#softGlow)"'
+    def z(key: str, op: float = .86) -> str:
+        return f'fill="{color_for_load(loads.get(key, 0))}" fill-opacity="{op}" stroke="#f1f8e8" stroke-opacity=".46" stroke-width="1.25" filter="url(#zoneGlow)"'
 
-    def base_front(cx: int, scale: float = 1.0) -> str:
-        waist = 28 if female else 34
-        shoulder = 60 if female else 70
-        hip = 45 if female else 40
+    if female:
+        shoulder = 74; waist = 34; hip = 58; head_rx = 22; head_ry = 29
+        label_symbol = "♀"
+    else:
+        shoulder = 88; waist = 42; hip = 48; head_rx = 24; head_ry = 30
+        label_symbol = "♂"
+
+    def anatomical_base(cx: int, back: bool = False) -> str:
+        extra_hair = ''
+        if female:
+            extra_hair = '<circle cx="0" cy="13" r="12" fill="#101813" stroke="#dbe9cf" stroke-opacity=".18"/>'
         return f'''
-        <g transform="translate({cx},44) scale({scale})">
-          <ellipse cx="0" cy="38" rx="26" ry="32" fill="#161d18" stroke="#dce8d1" stroke-opacity=".28"/>
-          <path d="M-18 68 Q0 82 18 68 L22 92 Q0 104 -22 92Z" fill="#161d18" stroke="#dce8d1" stroke-opacity=".22"/>
-          <path d="M {-shoulder} 122 Q -38 92 0 96 Q 38 92 {shoulder} 122 Q 44 176 {waist} 252 Q 18 280 0 282 Q -18 280 {-waist} 252 Q -44 176 {-shoulder} 122Z" fill="#172019" stroke="#dce8d1" stroke-opacity=".30"/>
-          <path d="M {-hip} 270 Q -18 250 0 276 Q 18 250 {hip} 270 Q 40 316 36 388 Q 22 398 8 388 Q 8 330 0 296 Q -8 330 -8 388 Q -22 398 -36 388 Q -40 316 {-hip} 270Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
-          <path d="M {-shoulder-6} 128 Q {-shoulder-31} 150 {-shoulder-34} 198 L {-shoulder-28} 292 Q {-shoulder-15} 306 {-shoulder-2} 292 L {-shoulder+3} 194 Q {-shoulder+4} 154 {-shoulder-6} 128Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
-          <path d="M {shoulder+6} 128 Q {shoulder+31} 150 {shoulder+34} 198 L {shoulder+28} 292 Q {shoulder+15} 306 {shoulder+2} 292 L {shoulder-3} 194 Q {shoulder-4} 154 {shoulder+6} 128Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
-          <path d="M -28 390 Q -16 400 -14 510 L -39 510 Q -47 430 -38 396 Q -34 390 -28 390Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".22"/>
-          <path d="M 28 390 Q 16 400 14 510 L 39 510 Q 47 430 38 396 Q 34 390 28 390Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".22"/>
+        <g transform="translate({cx},52)">
+          {extra_hair}
+          <ellipse cx="0" cy="45" rx="{head_rx}" ry="{head_ry}" fill="#121a15" stroke="#dbe9cf" stroke-opacity=".32" stroke-width="1.2"/>
+          <path d="M-16 73 Q0 86 16 73 L23 103 Q0 115 -23 103Z" fill="#121a15" stroke="#dbe9cf" stroke-opacity=".22"/>
+          <path d="M-{shoulder} 112 C-{shoulder-18} 94 -38 94 -20 101 C-10 106 10 106 20 101 C38 94 {shoulder-18} 94 {shoulder} 112 C78 150 68 200 {waist} 204 C{waist-2} 238 {hip} 264 {hip} 286 C25 300 12 307 0 307 C-12 307 -25 300 -{hip} 286 C-{hip} 264 -{waist-2} 238 -{waist} 204 C-68 200 -78 150 -{shoulder} 112Z" fill="#172019" stroke="#dbe9cf" stroke-opacity=".25" stroke-width="1.2"/>
+          <path d="M-{shoulder+6} 126 C-{shoulder+34} 150 -{shoulder+41} 197 -{shoulder+34} 254 C-{shoulder+31} 285 -{shoulder+20} 323 -{shoulder+8} 331 C-{shoulder-3} 333 -{shoulder-18} 333 -{shoulder-24} 323 C-{shoulder-32} 292 -{shoulder-28} 231 -{shoulder-22} 184 C-{shoulder-19} 154 -{shoulder-13} 134 -{shoulder+6} 126Z" fill="#121a15" stroke="#dbe9cf" stroke-opacity=".20"/>
+          <path d="M{shoulder+6} 126 C{shoulder+34} 150 {shoulder+41} 197 {shoulder+34} 254 C{shoulder+31} 285 {shoulder+20} 323 {shoulder+8} 331 C{shoulder-3} 333 {shoulder-18} 333 {shoulder-24} 323 C{shoulder-32} 292 {shoulder-28} 231 {shoulder-22} 184 C{shoulder-19} 154 {shoulder-13} 134 {shoulder+6} 126Z" fill="#121a15" stroke="#dbe9cf" stroke-opacity=".20"/>
+          <path d="M-{hip-6} 304 C-{hip-18} 342 -{hip-8} 383 -31 420 C-21 432 -8 427 -7 414 C-10 366 -5 333 0 310 C5 333 10 366 7 414 C8 427 21 432 31 420 C{hip+8} 383 {hip+18} 342 {hip-6} 304 C18 319 -18 319 -{hip-6} 304Z" fill="#121a15" stroke="#dbe9cf" stroke-opacity=".22"/>
+          <path d="M-29 422 C-18 436 -17 501 -21 541 L-45 541 C-52 494 -48 445 -38 425 C-36 418 -31 418 -29 422Z" fill="#121a15" stroke="#dbe9cf" stroke-opacity=".20"/>
+          <path d="M29 422 C18 436 17 501 21 541 L45 541 C52 494 48 445 38 425 C36 418 31 418 29 422Z" fill="#121a15" stroke="#dbe9cf" stroke-opacity=".20"/>
         </g>'''
 
-    def base_back(cx: int, scale: float = 1.0) -> str:
-        waist = 30 if female else 36
-        shoulder = 60 if female else 70
-        hip = 46 if female else 42
+    def front_zones(cx: int) -> str:
+        shoulders = z("shoulders", .84); arms = z("arms", .82); chest = z("chest", .82); core = z("core", .82); quads = z("quads", .86); calves = z("calves", .82)
+        if female:
+            chest_path_l = 'M-48 122 C-34 105 -12 109 -4 129 C-15 145 -34 153 -54 146 C-58 136 -56 128 -48 122Z'
+            chest_path_r = 'M48 122 C34 105 12 109 4 129 C15 145 34 153 54 146 C58 136 56 128 48 122Z'
+            core_path = 'M-25 154 C-12 145 12 145 25 154 C29 196 24 243 0 263 C-24 243 -29 196 -25 154Z'
+        else:
+            chest_path_l = 'M-57 119 C-38 98 -7 104 -2 134 C-18 154 -42 164 -61 148 C-65 136 -64 126 -57 119Z'
+            chest_path_r = 'M57 119 C38 98 7 104 2 134 C18 154 42 164 61 148 C65 136 64 126 57 119Z'
+            core_path = 'M-30 156 C-13 145 13 145 30 156 C34 198 28 249 0 271 C-28 249 -34 198 -30 156Z'
         return f'''
-        <g transform="translate({cx},44) scale({scale})">
-          <ellipse cx="0" cy="38" rx="25" ry="31" fill="#161d18" stroke="#dce8d1" stroke-opacity=".28"/>
-          <path d="M-18 68 Q0 82 18 68 L22 92 Q0 104 -22 92Z" fill="#161d18" stroke="#dce8d1" stroke-opacity=".22"/>
-          <path d="M {-shoulder} 122 Q -34 96 0 98 Q 34 96 {shoulder} 122 Q 44 178 {waist} 252 Q 18 280 0 282 Q -18 280 {-waist} 252 Q -44 178 {-shoulder} 122Z" fill="#172019" stroke="#dce8d1" stroke-opacity=".30"/>
-          <path d="M {-hip} 270 Q -18 250 0 276 Q 18 250 {hip} 270 Q 40 316 36 388 Q 22 398 8 388 Q 8 330 0 296 Q -8 330 -8 388 Q -22 398 -36 388 Q -40 316 {-hip} 270Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
-          <path d="M {-shoulder-6} 128 Q {-shoulder-31} 150 {-shoulder-34} 198 L {-shoulder-28} 292 Q {-shoulder-15} 306 {-shoulder-2} 292 L {-shoulder+3} 194 Q {-shoulder+4} 154 {-shoulder-6} 128Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
-          <path d="M {shoulder+6} 128 Q {shoulder+31} 150 {shoulder+34} 198 L {shoulder+28} 292 Q {shoulder+15} 306 {shoulder+2} 292 L {shoulder-3} 194 Q {shoulder-4} 154 {shoulder+6} 128Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".25"/>
-          <path d="M -28 390 Q -16 400 -14 510 L -39 510 Q -47 430 -38 396 Q -34 390 -28 390Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".22"/>
-          <path d="M 28 390 Q 16 400 14 510 L 39 510 Q 47 430 38 396 Q 34 390 28 390Z" fill="#151d17" stroke="#dce8d1" stroke-opacity=".22"/>
+        <g transform="translate({cx},52)">
+          <path d="M-{shoulder+2} 118 C-{shoulder-10} 95 -44 92 -26 108 C-34 134 -55 155 -{shoulder-8} 154 C-{shoulder+7} 145 -{shoulder+10} 130 -{shoulder+2} 118Z" {shoulders}/>
+          <path d="M{shoulder+2} 118 C{shoulder-10} 95 44 92 26 108 C34 134 55 155 {shoulder-8} 154 C{shoulder+7} 145 {shoulder+10} 130 {shoulder+2} 118Z" {shoulders}/>
+          <path d="M-{shoulder-8} 154 C-{shoulder+24} 174 -{shoulder+23} 244 -{shoulder+14} 310 C-{shoulder+6} 324 -{shoulder-10} 323 -{shoulder-18} 307 C-{shoulder-22} 253 -{shoulder-19} 194 -{shoulder-8} 154Z" {arms}/>
+          <path d="M{shoulder-8} 154 C{shoulder+24} 174 {shoulder+23} 244 {shoulder+14} 310 C{shoulder+6} 324 {shoulder-10} 323 {shoulder-18} 307 C{shoulder-22} 253 {shoulder-19} 194 {shoulder-8} 154Z" {arms}/>
+          <path d="{chest_path_l}" {chest}/>
+          <path d="{chest_path_r}" {chest}/>
+          <path d="{core_path}" {core}/>
+          <path d="M-1 156 L-1 266" stroke="#08140d" stroke-opacity=".38" stroke-width="2"/>
+          <path d="M-21 186 L21 186 M-22 218 L22 218 M-17 246 L17 246" stroke="#08140d" stroke-opacity=".28" stroke-width="1.2"/>
+          <path d="M-{hip-3} 301 C-20 315 -15 376 -28 421 C-39 431 -55 424 -57 410 C-58 364 -54 322 -{hip-3} 301Z" {quads}/>
+          <path d="M{hip-3} 301 C20 315 15 376 28 421 C39 431 55 424 57 410 C58 364 54 322 {hip-3} 301Z" {quads}/>
+          <path d="M-32 428 C-22 441 -21 503 -24 535 L-45 535 C-51 490 -48 449 -39 430 C-36 424 -34 424 -32 428Z" {calves}/>
+          <path d="M32 428 C22 441 21 503 24 535 L45 535 C51 490 48 449 39 430 C36 424 34 424 32 428Z" {calves}/>
         </g>'''
 
-    def front_muscles(cx: int, scale: float = 1.0) -> str:
-        chest = zone("chest"); shoulders = zone("shoulders"); arms = zone("arms"); core = zone("core"); quads = zone("quads"); calves = zone("calves")
+    def back_zones(cx: int) -> str:
+        shoulders = z("shoulders", .84); arms = z("arms", .82); back = z("back", .84); glutes = z("glutes", .86); hams = z("hamstrings", .86); calves = z("calves", .82)
         return f'''
-        <g transform="translate({cx},44) scale({scale})">
-          <path d="M-61 126 Q-46 101 -20 108 Q-25 145 -54 158 Q-66 148 -61 126Z" {shoulders}/>
-          <path d="M61 126 Q46 101 20 108 Q25 145 54 158 Q66 148 61 126Z" {shoulders}/>
-          <path d="M-56 158 Q-78 176 -76 223 L-73 288 Q-60 296 -48 286 L-45 198 Q-44 172 -56 158Z" {arms}/>
-          <path d="M56 158 Q78 176 76 223 L73 288 Q60 296 48 286 L45 198 Q44 172 56 158Z" {arms}/>
-          <path d="M-41 118 Q-7 102 -2 151 Q-20 172 -50 157 Q-50 132 -41 118Z" {chest}/>
-          <path d="M41 118 Q7 102 2 151 Q20 172 50 157 Q50 132 41 118Z" {chest}/>
-          <path d="M-25 168 Q0 156 25 168 L24 246 Q0 264 -24 246Z" {core}/>
-          <line x1="0" y1="166" x2="0" y2="250" stroke="#07170e" stroke-opacity=".42" stroke-width="2"/>
-          <path d="M-41 282 Q-12 274 -10 384 Q-25 399 -42 388 Q-52 322 -41 282Z" {quads}/>
-          <path d="M41 282 Q12 274 10 384 Q25 399 42 388 Q52 322 41 282Z" {quads}/>
-          <path d="M-29 398 Q-17 410 -16 504 L-39 504 Q-46 430 -38 402 Q-34 396 -29 398Z" {calves}/>
-          <path d="M29 398 Q17 410 16 504 L39 504 Q46 430 38 402 Q34 396 29 398Z" {calves}/>
-        </g>'''
-
-    def back_muscles(cx: int, scale: float = 1.0) -> str:
-        back = zone("back"); shoulders = zone("shoulders"); arms = zone("arms"); glutes = zone("glutes"); hams = zone("hamstrings"); calves = zone("calves")
-        return f'''
-        <g transform="translate({cx},44) scale({scale})">
-          <path d="M-62 126 Q-46 101 -18 108 Q-25 145 -54 160 Q-67 149 -62 126Z" {shoulders}/>
-          <path d="M62 126 Q46 101 18 108 Q25 145 54 160 Q67 149 62 126Z" {shoulders}/>
-          <path d="M-56 158 Q-78 176 -76 223 L-73 288 Q-60 296 -48 286 L-45 198 Q-44 172 -56 158Z" {arms}/>
-          <path d="M56 158 Q78 176 76 223 L73 288 Q60 296 48 286 L45 198 Q44 172 56 158Z" {arms}/>
-          <path d="M-44 118 Q-16 105 0 132 L0 242 Q-32 222 -48 172 Q-54 140 -44 118Z" {back}/>
-          <path d="M44 118 Q16 105 0 132 L0 242 Q32 222 48 172 Q54 140 44 118Z" {back}/>
-          <line x1="0" y1="110" x2="0" y2="256" stroke="#dbe9cf" stroke-opacity=".25" stroke-width="2"/>
-          <path d="M-40 258 Q-8 240 -2 282 Q-18 309 -45 296 Q-56 274 -40 258Z" {glutes}/>
-          <path d="M40 258 Q8 240 2 282 Q18 309 45 296 Q56 274 40 258Z" {glutes}/>
-          <path d="M-42 302 Q-16 310 -13 386 Q-28 399 -43 388 Q-54 328 -42 302Z" {hams}/>
-          <path d="M42 302 Q16 310 13 386 Q28 399 43 388 Q54 328 42 302Z" {hams}/>
-          <path d="M-29 398 Q-17 410 -16 504 L-39 504 Q-46 430 -38 402 Q-34 396 -29 398Z" {calves}/>
-          <path d="M29 398 Q17 410 16 504 L39 504 Q46 430 38 402 Q34 396 29 398Z" {calves}/>
+        <g transform="translate({cx},52)">
+          <path d="M-{shoulder+2} 118 C-{shoulder-9} 95 -44 92 -26 108 C-34 136 -57 158 -{shoulder-8} 156 C-{shoulder+7} 146 -{shoulder+10} 130 -{shoulder+2} 118Z" {shoulders}/>
+          <path d="M{shoulder+2} 118 C{shoulder-9} 95 44 92 26 108 C34 136 57 158 {shoulder-8} 156 C{shoulder+7} 146 {shoulder+10} 130 {shoulder+2} 118Z" {shoulders}/>
+          <path d="M-{shoulder-8} 154 C-{shoulder+24} 174 -{shoulder+23} 244 -{shoulder+14} 310 C-{shoulder+6} 324 -{shoulder-10} 323 -{shoulder-18} 307 C-{shoulder-22} 253 -{shoulder-19} 194 -{shoulder-8} 154Z" {arms}/>
+          <path d="M{shoulder-8} 154 C{shoulder+24} 174 {shoulder+23} 244 {shoulder+14} 310 C{shoulder+6} 324 {shoulder-10} 323 {shoulder-18} 307 C{shoulder-22} 253 {shoulder-19} 194 {shoulder-8} 154Z" {arms}/>
+          <path d="M-54 120 C-27 102 -7 118 0 144 L0 262 C-32 242 -50 199 -58 156 C-61 140 -60 128 -54 120Z" {back}/>
+          <path d="M54 120 C27 102 7 118 0 144 L0 262 C32 242 50 199 58 156 C61 140 60 128 54 120Z" {back}/>
+          <path d="M0 112 L0 274" stroke="#f1f8e8" stroke-opacity=".24" stroke-width="1.8"/>
+          <path d="M-{hip-4} 274 C-21 250 -2 258 -1 300 C-17 324 -48 316 -55 294 C-56 284 -51 277 -{hip-4} 274Z" {glutes}/>
+          <path d="M{hip-4} 274 C21 250 2 258 1 300 C17 324 48 316 55 294 C56 284 51 277 {hip-4} 274Z" {glutes}/>
+          <path d="M-{hip-2} 318 C-20 330 -17 382 -31 421 C-43 431 -58 422 -57 405 C-54 362 -51 333 -{hip-2} 318Z" {hams}/>
+          <path d="M{hip-2} 318 C20 330 17 382 31 421 C43 431 58 422 57 405 C54 362 51 333 {hip-2} 318Z" {hams}/>
+          <path d="M-32 428 C-22 441 -21 503 -24 535 L-45 535 C-51 490 -48 449 -39 430 C-36 424 -34 424 -32 428Z" {calves}/>
+          <path d="M32 428 C22 441 21 503 24 535 L45 535 C51 490 48 449 39 430 C36 424 34 424 32 428Z" {calves}/>
         </g>'''
 
     return f'''
-    <svg viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Digital twin muscular dinâmico">
+    <svg viewBox="0 0 960 670" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Digital twin muscular dinâmico">
       <defs>
-        <radialGradient id="bgTwin" cx="50%" cy="25%" r="85%"><stop offset="0%" stop-color="#16351f"/><stop offset="100%" stop-color="#031008"/></radialGradient>
-        <filter id="softGlow"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#fff8cf" flood-opacity=".12"/></filter>
+        <radialGradient id="bgTwin" cx="50%" cy="23%" r="86%"><stop offset="0%" stop-color="#16351f"/><stop offset="100%" stop-color="#031008"/></radialGradient>
+        <filter id="zoneGlow"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#fff8cf" flood-opacity=".10"/></filter>
+        <filter id="bodyShadow"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#000" flood-opacity=".36"/></filter>
         <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0 L0 0 0 28" fill="none" stroke="#dbe9cf" stroke-opacity=".045" stroke-width="1"/></pattern>
       </defs>
-      <rect width="900" height="620" rx="24" fill="url(#bgTwin)"/>
-      <rect width="900" height="620" rx="24" fill="url(#grid)"/>
-      <text x="34" y="48" fill="#fff8cf" font-size="25" font-weight="950" letter-spacing="5">DIGITAL TWIN</text>
-      <text x="34" y="77" fill="#b8c9aa" font-size="14" font-weight="700">{html.escape(title)} · coloração muscular dinâmica</text>
-      <circle cx="260" cy="320" r="208" fill="none" stroke="#dbe9cf" stroke-opacity=".07"/>
-      <circle cx="620" cy="320" r="208" fill="none" stroke="#dbe9cf" stroke-opacity=".07"/>
-      {base_front(260)}{front_muscles(260)}
-      {base_back(620)}{back_muscles(620)}
-      <g transform="translate(110,575)">
+      <rect width="960" height="670" rx="26" fill="url(#bgTwin)"/>
+      <rect width="960" height="670" rx="26" fill="url(#grid)"/>
+      <text x="36" y="50" fill="#fff8cf" font-size="25" font-weight="950" letter-spacing="5">DIGITAL TWIN</text>
+      <text x="36" y="79" fill="#b8c9aa" font-size="14" font-weight="700">{html.escape(title)} {label_symbol} · grupos musculares dinâmicos</text>
+      <circle cx="296" cy="342" r="222" fill="none" stroke="#dbe9cf" stroke-opacity=".07"/>
+      <circle cx="674" cy="342" r="222" fill="none" stroke="#dbe9cf" stroke-opacity=".07"/>
+      <g filter="url(#bodyShadow)">{anatomical_base(296, False)}{anatomical_base(674, True)}</g>
+      {front_zones(296)}
+      {back_zones(674)}
+      <g transform="translate(118,626)">
         <circle cx="0" cy="0" r="7" fill="#22c55e"/><text x="16" y="5" fill="#dbe9cf" font-size="13">Controlado</text>
-        <circle cx="135" cy="0" r="7" fill="#d7b92f"/><text x="151" y="5" fill="#dbe9cf" font-size="13">Atenção</text>
-        <circle cx="260" cy="0" r="7" fill="#f59e0b"/><text x="276" y="5" fill="#dbe9cf" font-size="13">Elevado</text>
-        <circle cx="370" cy="0" r="7" fill="#ef4444"/><text x="386" y="5" fill="#dbe9cf" font-size="13">Crítico</text>
+        <circle cx="140" cy="0" r="7" fill="#d7b92f"/><text x="156" y="5" fill="#dbe9cf" font-size="13">Atenção</text>
+        <circle cx="270" cy="0" r="7" fill="#f59e0b"/><text x="286" y="5" fill="#dbe9cf" font-size="13">Elevado</text>
+        <circle cx="386" cy="0" r="7" fill="#ef4444"/><text x="402" y="5" fill="#dbe9cf" font-size="13">Crítico</text>
       </g>
     </svg>
     '''
-
 
 def render_dynamic_twin(soldier: Dict[str, Any], loads: Dict[str, int]) -> None:
     sex = safe(soldier.get("sex"), "M")
     svg = twin_svg(loads, sex)
     st.markdown('<div class="twin-shell"><div class="twin-title"><h3>Mapa corporal de carga</h3><span>SVG dinâmico · por grupo muscular</span></div>', unsafe_allow_html=True)
-    components.html(svg, height=710, scrolling=False)
+    components.html(svg, height=740, scrolling=False)
     st.markdown('</div>', unsafe_allow_html=True)
 
 
