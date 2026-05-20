@@ -322,7 +322,7 @@ def inject_browser_identity() -> None:
     components.html(
         f"""
         <script>
-        const iconHref = {json.dumps(favicon_data)};
+        const iconHref = {json.dumps(APTUS_FAVICON_DATA_URI)};
         const doc = window.parent.document;
         doc.title = "APTUS | Digital Readiness Twin";
         let link = doc.querySelector("link[rel~='icon']");
