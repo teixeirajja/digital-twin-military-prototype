@@ -856,24 +856,24 @@ def inject_i18n_runtime() -> None:
               if (next !== old) el.setAttribute('aria-label', next);
             }});
           }}
-          function translateInputsAndSelects() {
-            doc.querySelectorAll('[role=option], [role=button], [data-baseweb], button, label, th, td, span, div, p, h1, h2, h3, h4, h5, h6, text').forEach(el => {
+          function translateInputsAndSelects() {{
+            doc.querySelectorAll('[role=option], [role=button], [data-baseweb], button, label, th, td, span, div, p, h1, h2, h3, h4, h5, h6, text').forEach(el => {{
               if (el.closest && el.closest('.aptus-lang-wrap')) return;
-              if (el.childNodes && el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+              if (el.childNodes && el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {{
                 const old = el.textContent;
                 const next = translateText(old);
                 if (next !== old) el.textContent = next;
-              }
-              ['title','aria-label','placeholder'].forEach(attr => {
-                if (el.hasAttribute && el.hasAttribute(attr)) {
+              }}
+              ['title','aria-label','placeholder'].forEach(attr => {{
+                if (el.hasAttribute && el.hasAttribute(attr)) {{
                   const old = el.getAttribute(attr);
                   const next = translateText(old);
                   if (next !== old) el.setAttribute(attr, next);
-                }
-              });
-            });
-          }
-          [50, 250, 900, 1600, 2600].forEach(ms => setTimeout(() => { walk(doc.body); translateInputsAndSelects(); }, ms));
+                }}
+              }});
+            }});
+          }}
+          [50, 250, 900, 1600, 2600].forEach(ms => setTimeout(() => {{ walk(doc.body); translateInputsAndSelects(); }}, ms));
           if (translations && Object.keys(translations).length) {{
             const obs = new MutationObserver(() => walk(doc.body));
             obs.observe(doc.body, {{childList:true, subtree:true, characterData:true}});
