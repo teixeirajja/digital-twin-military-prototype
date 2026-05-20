@@ -436,7 +436,7 @@ LANG_TRANSLATIONS = {
     "Secções disponíveis": "Available sections",
     "Dashboard": "Dashboard",
     "Militares": "Soldiers",
-    "Simular treino": "Simulate training",
+    "Simular treino": "Training simulation",
     "Meu perfil": "My profile",
     "Digital Twin": "Digital Twin",
     "Admin": "Admin",
@@ -608,8 +608,8 @@ LANG_TRANSLATIONS = {
     "Monitorizar ou Retirar/Adaptar": "Monitor or Withdraw/Adapt",
     "Monitorizar": "Monitor",
     "Retirar/Adaptar": "Withdraw/Adapt",
-    "Executa": "Execute",
-    "Executar": "Execute",
+    "Executa": "Proceed",
+    "Executar": "Proceed",
     "risco ≥ 60": "risk ≥ 60",
     "Posto": "Rank",
     "Prontidão atual": "Current readiness",
@@ -768,6 +768,164 @@ LANG_TRANSLATIONS = {
 }
 
 
+# Extra i18n patch v4: complete EN translation coverage and fix mixed Portuguese/English fragments.
+LANG_TRANSLATIONS.update({
+    "Yesulate training": "Training simulation",
+    "Yesulate Training": "Training Simulation",
+    "Yesulator decision": "Simulator decision",
+    "Yesulation objective": "Simulation objective",
+    "Yesulação": "Simulation",
+    "Yesulador": "Simulator",
+    "Action recomendada": "Recommended action",
+    "Ação recomendada": "Recommended action",
+    "recomendada": "recommended",
+    "Recomendação": "Recommendation",
+    "recomendação": "recommendation",
+    "Simular treino": "Training simulation",
+    "Simulador individual de treino": "Individual training simulator",
+    "Individual simulador de treino": "Individual training simulator",
+    "Simulador coletivo": "Collective training simulator",
+    "Simulação coletiva": "Collective simulation",
+    "Simulação individual": "Individual simulation",
+    "Decisão do simulador": "Simulator decision",
+    "Detalhe por grupo muscular": "Detail by muscle group",
+    "Leitura muscular automática": "Automatic muscle reading",
+    "Leitura automática:": "Automatic reading:",
+    "Treinos recentes": "Recent training sessions",
+    "Registo manual de atividade": "Manual activity log",
+    "Adicionar atividade concluída": "Log completed activity",
+    "Atividade guardada. As tabelas de treino, registo diário, prontidão e carga muscular foram atualizadas no Supabase.": "Activity saved. Training tables, daily records, readiness and muscle load were updated in Supabase.",
+    "Atividade guardada e métricas atualizadas.": "Activity saved and metrics updated.",
+    "Guardar atividade e atualizar Digital Twin": "Save activity and update Digital Twin",
+    "Save activity e atualizar Digital Twin": "Save activity and update Digital Twin",
+    "Save atividade": "Save activity",
+    "Militares acessíveis": "Accessible soldiers",
+    "Soldiers acessíveis": "Accessible soldiers",
+    "SOLDIERS acessíveis": "ACCESSIBLE SOLDIERS",
+    "Filtrar pelotão": "Filter platoon",
+    "Filtrar secção": "Filter section",
+    "Selecionar militar": "Select soldier",
+    "Decisão para planeamento": "Planning decision",
+    "Resumo operacional autorizado": "Authorized operational summary",
+    "Status para planeamento:": "Planning status:",
+    "Estado para planeamento:": "Planning status:",
+    "Apto para treino normal": "Fit for normal training",
+    "Apto com controlo de carga": "Fit with load control",
+    "Reduzir carga e monitorizar": "Reduce load and monitor",
+    "Pode integrar treino planeado; manter recolha de feedback pós-treino.": "Can join planned training; keep collecting post-training feedback.",
+    "Reduzir carga; priorizar recuperação e reavaliar antes de treino intenso.": "Reduce load; prioritize recovery and reassess before intense training.",
+    "Mantém o plano atual e regista feedback após o treino.": "Maintain the current plan and record post-training feedback.",
+    "Enquanto não há sincronização com wearables, este registo alimenta treino, fadiga, recuperação, prontidão e mapa muscular.": "Until wearable sync is available, this log feeds training, fatigue, recovery, readiness and muscle map data.",
+    "Feedback pós-treino": "Post-training feedback",
+    "Notas livres": "Free notes",
+    "Sono da noite anterior (h)": "Previous night sleep (h)",
+    "Dores musculares": "Muscle soreness",
+    "Dor/lesão": "Pain/injury",
+    "Desnível + (m)": "Elevation gain (m)",
+    "FC média": "Average HR",
+    "FC máx.": "Max HR",
+    "Ritmo médio": "Average pace",
+    "Duração (min)": "Duration (min)",
+    "Distância (km)": "Distance (km)",
+    "Ex.: zona de dor, motivo de fadiga, treino adaptado, sensação geral...": "E.g.: pain area, fatigue reason, adapted training, general feeling...",
+    "Risk após atividade": "Risk after activity",
+    "Risco após atividade": "Risk after activity",
+    "Readiness após atividade": "Readiness after activity",
+    "Prontidão após atividade": "Readiness after activity",
+    "estimativa atualizada": "updated estimate",
+    "duração × RPE": "duration × RPE",
+    "atividade registada": "activity recorded",
+    "Atividade registada. Controlar carga acumulada e evitar novo estímulo intenso consecutivo.": "Activity recorded. Control accumulated load and avoid another consecutive intense stimulus.",
+    "Atividade registada. Resposta compatível com continuação do plano normal.": "Activity recorded. Response is compatible with continuing the normal plan.",
+    "Atividade registada. Risco elevado; adaptar treino seguinte e priorizar recuperação.": "Activity recorded. High risk; adapt the next training session and prioritize recovery.",
+    "Objetivo da simulação": "Simulation objective",
+    "Pergunta": "Question",
+    "Compensa fazer este treino agora?": "Is this training worth doing now?",
+    "Base": "Basis",
+    "Resultado": "Result",
+    "decisão + impacto no Digital Twin": "decision + impact on the Digital Twin",
+    "Treino possível, mas reduz volume/intensidade ou controla de perto a resposta.": "Training is possible, but reduce volume/intensity or closely monitor the response.",
+    "Treino recomendado. Mantém recolha de feedback pós-sessão.": "Training recommended. Keep collecting post-session feedback.",
+    "Não recomendado sem adaptação. Prioriza recuperação ou treino alternativo.": "Not recommended without adaptation. Prioritize recovery or alternative training.",
+    "Carga muscular equilibrada; treino pode avançar com controlo normal.": "Balanced muscle load; training can proceed with normal monitoring.",
+    "Controlar volume em ": "Control volume in ",
+    "; evitar novo estímulo intenso consecutivo.": "; avoid another consecutive intense stimulus.",
+    "Reduzir estímulo nas zonas críticas e priorizar recuperação ativa.": "Reduce stimulus on critical zones and prioritize active recovery.",
+    "Integrar com controlo de volume; evitar estímulos intensos consecutivos.": "Include with volume control; avoid consecutive intense stimuli.",
+    "Sem recomendações críticas": "No critical recommendations",
+    "Zona mais afetada": "Most affected area",
+    "Zona mais carregada": "Most loaded area",
+    "Mais afetada": "Most affected area",
+    "Impacto previsto no Digital Twin": "Predicted impact on the Digital Twin",
+    "Estado previsto": "Predicted status",
+    "Atual": "Current",
+    "Após treino": "After training",
+    "Antes": "Before",
+    "Corrida contínua": "Continuous run",
+    "Corrida intervalada": "Interval run",
+    "Marcha com carga": "Loaded march",
+    "Circuito de força": "Strength circuit",
+    "Treino técnico-tático": "Technical-tactical training",
+    "Recuperação ativa": "Active recovery",
+    "Corpo inteiro": "Full body",
+    "Pernas": "Legs",
+    "Pernas/Core": "Legs/Core",
+    "Superior": "Upper body",
+    "Inferior": "Lower body",
+    "agachamento, flexões, prancha": "squats, push-ups, plank",
+    "Baixa": "Low",
+    "Média": "Medium",
+    "Alta": "High",
+    "Leve": "Light",
+    "Moderada": "Moderate",
+    "Forte": "Hard",
+    "Plano": "Flat",
+    "Misto": "Mixed",
+    "Inclinado": "Inclined",
+    "Técnico": "Technical",
+    "Patrulha": "Patrol",
+    "Progressão": "Movement",
+    "Combate aproximado": "Close combat",
+    "Reconhecimento": "Reconnaissance",
+    "Bicicleta leve": "Light cycling",
+    "Mobilidade": "Mobility",
+    "Caminhada": "Walking",
+    "Natação leve": "Light swimming",
+    "Descanso / recuperação": "Rest / recovery",
+    "Foco muscular": "Muscle focus",
+    "Falha muscular?": "Muscular failure?",
+    "Parcial": "Partial",
+    "Sim": "Yes",
+    "Não": "No",
+    "Quadríceps": "Quadriceps",
+    "Gémeos": "Calves",
+    "Glúteos": "Glutes",
+    "Posteriores": "Hamstrings",
+    "Peito": "Chest",
+    "Costas": "Back",
+    "Ombros": "Shoulders",
+    "Braços": "Arms",
+    "Sem zona crítica": "No critical area",
+    "Sem zona critica": "No critical area",
+    "Controlado": "Controlled",
+    "Atenção": "Warning",
+    "Elevado": "High",
+    "Crítico": "Critical",
+    "Critico": "Critical",
+    "Pronto": "Ready",
+    "Risco": "Risk",
+    "Baixo": "Low",
+    "Moderado": "Moderate",
+    "Apto": "Fit",
+    "Condicionado": "Conditioned",
+    "Executa": "Proceed",
+    "Executar": "Proceed",
+    "Monitorizar": "Monitor",
+    "Retirar/Adaptar": "Withdraw/Adapt",
+    "Monitorizar ou Retirar/Adaptar": "Monitor or Withdraw/Adapt",
+})
+
+
 def init_language() -> None:
     try:
         requested = st.query_params.get("lang")
@@ -815,15 +973,34 @@ def inject_i18n_runtime() -> None:
           const translations = {json.dumps(translations, ensure_ascii=False)};
           const doc = window.parent.document;
           const keys = Object.keys(translations).sort((a,b) => b.length - a.length);
+          const exactOnly = new Set(['Sim','Não','No','Yes','PT','EN','Core','Data','Base','Foco','Grupo','Carga','Risco','Sono','Stress','Ready','Warning','Risk','All']);
+          const substringKeys = keys.filter(k => k.length >= 4 && !exactOnly.has(k));
+          function postFix(core) {{
+            return core
+              .replaceAll('Yesulate training', 'Training simulation')
+              .replaceAll('Yesulate Training', 'Training Simulation')
+              .replaceAll('Yesulator decision', 'Simulator decision')
+              .replaceAll('Yesulation objective', 'Simulation objective')
+              .replaceAll('Action recomendada', 'Recommended action')
+              .replaceAll('Save activity e atualizar Digital Twin', 'Save activity and update Digital Twin')
+              .replaceAll('Risk após atividade', 'Risk after activity')
+              .replaceAll('Readiness após atividade', 'Readiness after activity')
+              .replaceAll('Impact previsto', 'Predicted impact')
+              .replaceAll('Average readiness prevista', 'Predicted average readiness')
+              .replaceAll('Average readiness atual', 'Current average readiness')
+              .replaceAll('Risk elevado previsto', 'Predicted high risk')
+              .replaceAll('Soldiers a adaptar', 'Soldiers to adapt');
+          }}
           function translateText(value) {{
             if (!value || !value.trim()) return value;
-            let leading = value.match(/^\\s*/)[0];
-            let trailing = value.match(/\\s*$/)[0];
+            let leading = value.match(/^\s*/)[0];
+            let trailing = value.match(/\s*$/)[0];
             let core = value.trim();
             if (translations[core]) return leading + translations[core] + trailing;
-            for (const k of keys) {{
+            for (const k of substringKeys) {{
               if (core.includes(k)) core = core.split(k).join(translations[k]);
             }}
+            core = postFix(core);
             return leading + core + trailing;
           }}
           function walk(root) {{
@@ -875,8 +1052,13 @@ def inject_i18n_runtime() -> None:
           }}
           [50, 250, 900, 1600, 2600].forEach(ms => setTimeout(() => {{ walk(doc.body); translateInputsAndSelects(); }}, ms));
           if (translations && Object.keys(translations).length) {{
-            const obs = new MutationObserver(() => walk(doc.body));
-            obs.observe(doc.body, {{childList:true, subtree:true, characterData:true}});
+            let timer = null;
+            const rerun = () => {{ walk(doc.body); translateInputsAndSelects(); }};
+            const obs = new MutationObserver(() => {{
+              if (timer) clearTimeout(timer);
+              timer = setTimeout(rerun, 80);
+            }});
+            obs.observe(doc.body, {{childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['aria-label','placeholder','title']}});
           }}
         }})();
         </script>
